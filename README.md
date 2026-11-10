@@ -1,0 +1,2 @@
+# qobuz-mcp
+Qobuz MCP
