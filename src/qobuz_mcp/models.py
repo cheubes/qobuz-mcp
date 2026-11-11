@@ -141,6 +141,17 @@ class PlaylistSummary(BaseModel):
     updated_at: str | None
 
 
+class PlaylistEntry(BaseModel):
+    playlist_track_id: int
+    position: int | None
+    track: TrackSummary
+
+
+class PlaylistDetail(PlaylistSummary):
+    genres: list[GenreRef]
+    entries: Page[PlaylistEntry]
+
+
 def page_fields(
     group: Any, mapper: Callable[[dict[str, Any]], BaseModel], *, limit: int, offset: int
 ) -> dict[str, Any]:
@@ -229,6 +240,25 @@ def track_detail(raw: dict[str, Any]) -> TrackDetail:
         isrc=raw.get("isrc"),
         copyright=raw.get("copyright"),
         release_date=raw.get("release_date_original"),
+    )
+
+
+def playlist_entry(raw: dict[str, Any]) -> PlaylistEntry:
+    return PlaylistEntry(
+        playlist_track_id=raw["playlist_track_id"],
+        position=raw.get("position"),
+        track=track_summary(raw),
+    )
+
+
+def playlist_detail(raw: dict[str, Any], *, limit: int, offset: int) -> PlaylistDetail:
+    genres = [_ref(GenreRef, genre) for genre in raw.get("genres") or []]
+    return PlaylistDetail(
+        **playlist_summary(raw).model_dump(),
+        genres=[genre for genre in genres if genre is not None],
+        entries=Page[PlaylistEntry](
+            **page_fields(raw.get("tracks"), playlist_entry, limit=limit, offset=offset)
+        ),
     )
 
 
