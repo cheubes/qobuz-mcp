@@ -32,7 +32,8 @@ select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "ASYNC", "RUF"]
 [tool.mypy]
 strict = true
 plugins = ["pydantic.mypy"]
-files = ["src", "tests"]
+files = ["src", "tests", "scripts"]
+mypy_path = "scripts"
 
 [tool.coverage.run]
 source = ["qobuz_mcp"]
@@ -44,6 +45,7 @@ show_missing = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["scripts"]
 addopts = ["--strict-markers"]
 markers = ["live: calls the real Qobuz API, read-only"]
 

@@ -86,9 +86,9 @@ All configuration lives in `pyproject.toml`.
 - `[dependency-groups]`: `dev` group (section 1).
 - `[tool.uv]`: `required-version`, set at scaffold time to the current uv minor version (`>=0.13,<0.14` as of 0.13.7). `astral-sh/setup-uv` reads it, so CI and local runs use the same uv.
 - `[tool.ruff]`: `line-length = 100`. Rule sets: `E`, `W`, `F`, `I` (imports), `N` (PEP 8 naming), `UP` (pyupgrade), `B` (bugbear), `SIM`, `ASYNC`, `RUF`. The target version is derived from `requires-python`.
-- `[tool.mypy]`: `strict = true`, `plugins = ["pydantic.mypy"]`, `files` covering `src/`, `tests/` and `scripts/`.
+- `[tool.mypy]`: `strict = true`, `plugins = ["pydantic.mypy"]`, `files` covering `src/`, `tests/` and `scripts/`, `mypy_path = "scripts"`.
 - `[tool.coverage]`: `source = ["qobuz_mcp"]`, `branch = true`, `fail_under = 90`.
-- `[tool.pytest.ini_options]`: `testpaths = ["tests"]`, `addopts = ["--strict-markers"]`, marker `live` declared with its description.
+- `[tool.pytest.ini_options]`: `testpaths = ["tests"]`, `pythonpath = ["scripts"]` (so tests import the traceability script), `addopts = ["--strict-markers"]`, marker `live` declared with its description.
 
 Async tests use the anyio plugin (`@pytest.mark.anyio`), with the `anyio_backend` fixture fixed to `asyncio` in `tests/conftest.py`.
 
@@ -316,7 +316,7 @@ Claude Desktop (`claude_desktop_config.json`). The absolute path to `uv` is requ
 | Live | `tests/live/`, marker `live` | The `[live]` acceptance criteria, against the real API | yes |
 
 - Traceability: each test cites in its docstring the acceptance criterion IDs it covers (FS section 7). Every `[test]` and `[live]` criterion delivered by a completed plan step is covered by at least one test.
-- `scripts/check_traceability.py` (standard library only) enforces traceability. It reads the criterion IDs and tags from `functional-specifications.md`, the steps of `implementation-plan.md` with their checkbox and `Delivers` list, and the IDs cited in `tests/`. It fails when:
+- `scripts/check_traceability.py` (standard library only) enforces traceability. It reads the criterion IDs and tags from `functional-specifications.md`, and the steps of `implementation-plan.md` with their checkbox and `Delivers` list. It collects the IDs cited in the docstrings of `tests/` (module, class and function docstrings only, so IDs used as test data are not citations). It fails when:
   - a criterion is delivered by no step, or by more than one;
   - a step delivers an unknown ID;
   - a `[test]` or `[live]` criterion of a checked step is not cited by any test;
@@ -346,7 +346,7 @@ Triggers: push to `main`, pull requests, manual dispatch. Workflow permissions: 
 | `build` | `ubuntu-latest` | `uv build` |
 | `links` | `ubuntu-latest` | lychee in offline mode on all Markdown files: internal links and anchors only |
 | `secrets` | `ubuntu-latest` | gitleaks on the full history (`fetch-depth: 0`) |
-| `workflows` | `ubuntu-latest` | zizmor on `.github/workflows/` |
+| `workflows` | `ubuntu-latest` | zizmor, offline, on `.github/` (workflows and Dependabot configuration), run with `uvx` at a pinned version |
 
 All jobs set up uv with the official `astral-sh/setup-uv` action, with its cache enabled.
 
@@ -359,7 +359,8 @@ Code scanning is free only for public repositories, so `codeql.yml` is added at 
 ### Supply chain
 
 - Every third-party action is pinned by full commit SHA, with the version in a trailing comment.
-- `dependabot.yml` updates the `github-actions` and `uv` ecosystems weekly, with one grouped pull request per ecosystem.
+- `dependabot.yml` updates the `github-actions` and `uv` ecosystems weekly, with one grouped pull request per ecosystem, and a 7-day cooldown so that brand-new releases are not adopted immediately.
+- `actions/checkout` runs with `persist-credentials: false`, so later steps cannot reuse the token.
 
 ## 15. Publication
 
