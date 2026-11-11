@@ -38,9 +38,10 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = _build_parser().parse_args(argv)
     if arguments.command == "serve":
-        # stdout is reserved for the MCP protocol.
-        print("qobuz-mcp serve: not implemented yet", file=sys.stderr)
-        return 1
+        from qobuz_mcp.server import run
+
+        run()
+        return 0
     try:
         if arguments.command == "login":
             asyncio.run(_login(with_token=arguments.token))

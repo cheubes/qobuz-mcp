@@ -72,6 +72,13 @@ class QobuzClient:
     async def get_user(self) -> dict[str, Any]:
         return await self.get("user/get")
 
+    async def search_catalog(
+        self, query: str, kind: str, *, limit: int, offset: int
+    ) -> dict[str, Any]:
+        return await self.get(
+            "catalog/search", {"query": query, "type": kind, "limit": limit, "offset": offset}
+        )
+
     async def get(
         self,
         endpoint: str,

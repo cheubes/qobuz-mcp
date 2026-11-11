@@ -1,9 +1,15 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterator
+from typing import Any
 
 import httpx2
+import keyring
 import pytest
+from fastmcp import Client
+from keyring.backends import macOS
 
+from qobuz_mcp import server
 from qobuz_mcp.api import API_BASE_URL, REQUEST_TIMEOUT_SECONDS
+from qobuz_mcp.credentials import load_credentials
 
 # Endpoints of the read-only tools (functional specifications, section 5) and user/get.
 READ_ONLY_ENDPOINTS = frozenset(
@@ -41,9 +47,32 @@ async def guard_live_request(request: httpx2.Request) -> None:
     raise BlockedRequestError(f"live tests must not send {request.method} {request.url.path}")
 
 
+def guarded_http_client() -> httpx2.AsyncClient:
+    return httpx2.AsyncClient(
+        timeout=REQUEST_TIMEOUT_SECONDS, event_hooks={"request": [guard_live_request]}
+    )
+
+
 @pytest.fixture
 async def live_http() -> AsyncIterator[httpx2.AsyncClient]:
-    async with httpx2.AsyncClient(
-        timeout=REQUEST_TIMEOUT_SECONDS, event_hooks={"request": [guard_live_request]}
-    ) as http:
+    async with guarded_http_client() as http:
         yield http
+
+
+@pytest.fixture(autouse=True)
+def memory_keyring() -> Iterator[None]:
+    """Overrides the in-memory backend of tests/conftest.py: live tests use the real Keychain."""
+    previous = keyring.get_keyring()
+    keyring.set_keyring(macOS.Keyring())  # type: ignore[no-untyped-call]  # untyped in keyring
+    yield
+    keyring.set_keyring(previous)
+
+
+@pytest.fixture
+async def live_client(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[Client[Any]]:
+    """MCP client on the real server, with the real credentials and the guarded HTTP client."""
+    if load_credentials() is None:
+        pytest.skip("not logged in: run `qobuz-mcp login`")
+    monkeypatch.setattr(server, "http_client", guarded_http_client)
+    async with Client(server.mcp) as client:
+        yield client

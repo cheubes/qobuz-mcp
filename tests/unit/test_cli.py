@@ -28,11 +28,11 @@ def assert_no_secret(output: str) -> None:
     assert FAKE_CODE not in output
 
 
-def test_serve_is_not_implemented_yet(capsys: pytest.CaptureFixture[str]) -> None:
-    assert cli.main(["serve"]) == 1
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    assert "not implemented yet" in captured.err
+def test_serve_runs_the_mcp_server(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr("qobuz_mcp.server.run", lambda: calls.append("run"))
+    assert cli.main(["serve"]) == 0
+    assert calls == ["run"]
 
 
 @pytest.mark.parametrize("argv", [[], ["unknown"]])
