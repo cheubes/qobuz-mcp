@@ -1,4 +1,5 @@
 import keyring
+import pytest
 
 from qobuz_mcp.credentials import (
     KEYCHAIN_ACCOUNT,
@@ -38,3 +39,12 @@ def test_delete_credentials_reports_whether_there_were_any() -> None:
 
 def test_repr_never_shows_the_token() -> None:
     assert FAKE_TOKEN not in repr(CREDENTIALS)
+
+
+def test_app_id_override_replaces_the_stored_app_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """AC-SETUP-06"""
+    save_credentials(CREDENTIALS)
+    monkeypatch.setenv("QOBUZ_APP_ID", "987654321")
+    assert load_credentials() == Credentials(app_id="987654321", user_auth_token=FAKE_TOKEN)
+    monkeypatch.setenv("QOBUZ_APP_ID", "")
+    assert load_credentials() == CREDENTIALS

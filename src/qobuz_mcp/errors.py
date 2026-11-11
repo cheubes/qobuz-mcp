@@ -30,7 +30,23 @@ class LoginTimeoutError(QobuzError):
 
 
 class AuthenticationError(QobuzError):
-    """Qobuz rejected the credentials."""
+    """Not logged in, or Qobuz rejected the credentials."""
+
+
+class InvalidAppIdError(QobuzError):
+    """Qobuz rejected the app_id."""
+
+
+class ForbiddenError(QobuzError):
+    """Qobuz refused the operation, typically a write on a playlist the user does not own."""
+
+
+class NotFoundError(QobuzError):
+    """Qobuz found no item for the requested IDs."""
+
+
+class QobuzUnavailableError(QobuzError):
+    """Qobuz rate limited the request, failed, or could not be reached."""
 
 
 class QobuzApiError(QobuzError):

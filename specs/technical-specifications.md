@@ -149,7 +149,7 @@ Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised 
 - Base URL: `https://www.qobuz.com/api.json/0.2/`.
 - Headers on every call: `X-App-Id`, and `X-User-Auth-Token` for authenticated calls.
 - Timeout: 15 seconds.
-- One method per endpoint, returning the parsed JSON. Mapping to output models happens in `models.py`, not in the client.
+- Generic `get` and `post` methods handle parameter encoding, headers and error mapping. One method per endpoint builds on them, returning the parsed JSON. Each endpoint method is added with the tool that uses it (implementation plan, steps 8 to 10). Mapping to output models happens in `models.py`, not in the client.
 - No client-side cache, no retry, no throttling.
 - Reads are `GET` with query parameters. Writes are `POST` with an `application/x-www-form-urlencoded` body, as the web player does.
 - ID lists are sent comma-separated (`track_ids=1,2,3`). Booleans are sent as `true` or `false`.
@@ -161,11 +161,11 @@ Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised 
 | Qobuz response | Exception |
 |---|---|
 | 401 | `AuthenticationError` |
-| 400 whose message mentions the app id | `InvalidAppIdError` |
+| 400 whose message mentions the app id (Qobuz: "Invalid or missing app_id parameter") | `InvalidAppIdError` |
 | 403 | `ForbiddenError` |
 | 404 | `NotFoundError` |
 | 429, 5xx, network error, timeout | `QobuzUnavailableError` |
-| Anything else | `QobuzApiError` |
+| Anything else, including a 200 whose body is not a JSON object | `QobuzApiError` |
 
 All inherit from `QobuzError`. Tool handlers let these propagate. A single conversion point in `server.py` turns them into FastMCP `ToolError` with the user-facing messages from FS-BEH-2. Messages are built from the exception type and the requested IDs only, never from request headers or bodies.
 

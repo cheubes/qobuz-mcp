@@ -1,4 +1,5 @@
 import json
+import os
 from dataclasses import dataclass, field
 
 import keyring
@@ -21,14 +22,21 @@ def save_credentials(credentials: Credentials) -> None:
     keyring.set_password(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT, value)
 
 
+APP_ID_OVERRIDE_VARIABLE = "QOBUZ_APP_ID"
+
+
 def load_credentials() -> Credentials | None:
-    """Return the stored credentials, or None when missing or unreadable."""
+    """Return the stored credentials, or None when missing or unreadable.
+
+    `QOBUZ_APP_ID`, when set, replaces the stored app_id.
+    """
     raw = keyring.get_password(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT)
     if raw is None:
         return None
     try:
         value = json.loads(raw)
-        return Credentials(app_id=value["app_id"], user_auth_token=value["user_auth_token"])
+        app_id = os.environ.get(APP_ID_OVERRIDE_VARIABLE) or value["app_id"]
+        return Credentials(app_id=app_id, user_auth_token=value["user_auth_token"])
     except ValueError, KeyError, TypeError:
         return None
 
