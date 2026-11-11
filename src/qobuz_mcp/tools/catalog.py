@@ -6,6 +6,7 @@ from pydantic import Field
 from qobuz_mcp.models import (
     AlbumDetail,
     AlbumSummary,
+    ArtistDetail,
     ArtistSummary,
     Page,
     PlaylistDetail,
@@ -14,6 +15,7 @@ from qobuz_mcp.models import (
     TrackSummary,
     album_detail,
     album_summary,
+    artist_detail,
     artist_summary,
     page_fields,
     playlist_detail,
@@ -101,3 +103,23 @@ async def get_playlist(
     """
     payload = await qobuz(ctx).get_playlist(playlist_id, limit=limit, offset=offset)
     return playlist_detail(payload, limit=limit, offset=offset)
+
+
+async def get_artist(
+    ctx: Context,
+    artist_id: Annotated[int, Field(ge=1, description="Qobuz artist ID (an integer).")],
+    full_biography: Annotated[
+        bool, Field(description="Also return the full biography, which can be long.")
+    ] = False,
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> ArtistDetail:
+    """Get an artist's biography summary and discography.
+
+    The full biography (often several thousand characters) is returned only when
+    `full_biography` is true: ask for it when the user wants to know more about the artist.
+    The discography is paginated with `limit` and `offset`; `albums.total` tells whether more
+    albums exist. Use `get_similar_artists` to discover related artists.
+    """
+    payload = await qobuz(ctx).get_artist(artist_id, limit=limit, offset=offset)
+    return artist_detail(payload, full_biography=full_biography, limit=limit, offset=offset)

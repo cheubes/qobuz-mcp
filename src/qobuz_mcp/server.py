@@ -67,6 +67,7 @@ mcp.tool(catalog.search_catalog, annotations=READ_ONLY)
 mcp.tool(catalog.get_album, annotations=READ_ONLY)
 mcp.tool(catalog.get_track, annotations=READ_ONLY)
 mcp.tool(catalog.get_playlist, annotations=READ_ONLY)
+mcp.tool(catalog.get_artist, annotations=READ_ONLY)
 
 
 def run() -> None:

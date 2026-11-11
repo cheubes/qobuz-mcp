@@ -128,6 +128,12 @@ class ArtistSummary(BaseModel):
     albums_count: int | None
 
 
+class ArtistDetail(ArtistSummary):
+    biography_summary: str | None
+    biography: str | None
+    albums: Page[AlbumSummary]
+
+
 class PlaylistSummary(BaseModel):
     id: int
     url: str
@@ -306,6 +312,21 @@ def artist_summary(raw: dict[str, Any]) -> ArtistSummary:
         url=public_url("artist", raw["id"]),
         name=raw["name"],
         albums_count=raw.get("albums_count"),
+    )
+
+
+def artist_detail(
+    raw: dict[str, Any], *, full_biography: bool, limit: int, offset: int
+) -> ArtistDetail:
+    biography = raw.get("biography")
+    biography = biography if isinstance(biography, dict) else {}
+    return ArtistDetail(
+        **artist_summary(raw).model_dump(),
+        biography_summary=biography.get("summary"),
+        biography=biography.get("content") if full_biography else None,
+        albums=Page[AlbumSummary](
+            **page_fields(raw.get("albums"), album_summary, limit=limit, offset=offset)
+        ),
     )
 
 
