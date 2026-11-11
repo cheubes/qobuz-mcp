@@ -123,3 +123,16 @@ async def get_artist(
     """
     payload = await qobuz(ctx).get_artist(artist_id, limit=limit, offset=offset)
     return artist_detail(payload, full_biography=full_biography, limit=limit, offset=offset)
+
+
+async def get_similar_artists(
+    ctx: Context,
+    artist_id: Annotated[int, Field(ge=1, description="Qobuz artist ID (an integer).")],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[ArtistSummary]:
+    """List artists similar to a given artist, as Qobuz suggests them, to discover new music."""
+    payload = await qobuz(ctx).get_similar_artists(artist_id, limit=limit, offset=offset)
+    return Page[ArtistSummary](
+        **page_fields(payload.get("artists"), artist_summary, limit=limit, offset=offset)
+    )
