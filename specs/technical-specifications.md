@@ -1,6 +1,6 @@
 # Technical specifications
 
-Status: draft. Implements [functional-specifications.md](functional-specifications.md).
+Status: approved. Implements [functional-specifications.md](functional-specifications.md).
 
 ## 1. Stack
 
@@ -208,35 +208,66 @@ All endpoints below were called successfully during the proof of concept.
 
 ## 10. Output models
 
-Tool results are pydantic models in `models.py`. They are the contract the assistant sees, through the output schema FastMCP derives from them. Field lists are completed from the response structures observed during the proof of concept (implementation plan, "Output models" step).
+Tool results are pydantic models in `models.py`. They are the contract the assistant sees, through the output schema FastMCP derives from them. Fields come from the response structures observed during the proof of concept. Each model keeps only what the assistant needs, never the raw payload (FS-BEH-1).
+
+### Conventions
+
+- IDs keep Qobuz's types: album IDs are strings, all other IDs are integers.
+- Every catalog model carries `id` and `url`, the public `https://open.qobuz.com/<kind>/<id>` URL (FS-BEH-1).
+- Dates are ISO 8601 strings: `YYYY-MM-DD` for release dates, UTC date-times for Qobuz timestamps.
+- Durations are in seconds, in fields named `duration_seconds`.
+- Optional fields are `None` when Qobuz omits them or sends `null`.
+- Third-party text fields (names, descriptions, biographies, editorial texts, credits) are returned as plain strings, unmodified (FS-BEH-4).
+- No image URLs: the assistant cannot use them, and they cost context.
+
+### Shared models
+
+| Model | Fields | Source |
+|---|---|---|
+| `Page[T]` | `items: list[T]`, `total`, `limit`, `offset` | Qobuz page objects. The `artists` group of `catalog/search` has no `limit` or `offset`, which are then filled from the request |
+| `ArtistRef` | `id`, `name` | `artist`, `performer`, `composer` objects |
+| `ArtistCredit` | `id`, `name`, `roles: list[str]` | `album/get` `artists[]` |
+| `LabelRef` | `id`, `name` | `label` objects |
+| `GenreRef` | `id`, `name` | `genre` and `genres[]` objects |
+| `AlbumRef` | `id`, `title` | `album` object inside a track |
+| `OwnerRef` | `id`, `name` | playlist `owner` |
+| `AudioQuality` | `bit_depth`, `sampling_rate_khz: float`, `channels`, `hires: bool` | `maximum_bit_depth`, `maximum_sampling_rate`, `maximum_channel_count`, `hires` |
+| `Favorite[T]` | `item: T`, `favorited_at` | `favorite/getUserFavorites` items, whose `favorited_at` timestamp is present for albums, artists and tracks |
+
+### Catalog models
 
 | Model | Used by | Fields |
 |---|---|---|
-| `Page[T]` | every list tool | `items`, `total`, `limit`, `offset` |
-| `AlbumSummary` | search, lists | to be defined |
-| `AlbumDetail` | `get_album` | to be defined |
-| `TrackSummary` | search, album tracklist | to be defined |
-| `TrackDetail` | `get_track` | to be defined |
-| `ArtistSummary` | search, lists, similar artists | to be defined |
-| `ArtistDetail` | `get_artist` | to be defined |
-| `LabelDetail` | `get_label` | to be defined |
-| `PlaylistSummary` | search, lists | to be defined |
-| `PlaylistDetail` | `get_playlist` | to be defined |
-| `PlaylistEntry` | `get_playlist` | `playlist_track_id`, `track` (`TrackSummary`) |
-| `Genre` | `list_genres` | to be defined |
-| `WriteResult` | write tools | to be defined |
+| `AlbumSummary` | search, artist and label discographies, featured albums, favorites, purchases | `id: str`, `url`, `title`, `version`, `artist: ArtistRef`, `release_date`, `tracks_count`, `duration_seconds`, `genre: GenreRef`, `label: LabelRef`, `audio_quality: AudioQuality`, `parental_warning`, `streamable` |
+| `AlbumDetail` | `get_album` | `AlbumSummary` fields, plus `artists: list[ArtistCredit]`, `composer: ArtistRef`, `release_type`, `description`, `awards: list[Award]`, `booklets: list[Booklet]`, `copyright`, `upc`, `tracks: Page[TrackSummary]` |
+| `Award` | `AlbumDetail` | `name`, `publication_name`, `awarded_at` |
+| `Booklet` | `AlbumDetail` | `name`, `url` (from `goodies[]`) |
+| `TrackSummary` | search, album tracklist, playlist entries, favorites, purchases | `id: int`, `url`, `title`, `version`, `performer: ArtistRef`, `album: AlbumRef`, `track_number`, `media_number`, `duration_seconds`, `audio_quality: AudioQuality`, `parental_warning`, `streamable` |
+| `TrackDetail` | `get_track` | `TrackSummary` fields, plus `composer: ArtistRef`, `work`, `credits` (the raw `performers` string, not parsed: its format is not documented), `isrc`, `copyright`, `release_date` |
+| `ArtistSummary` | search, similar artists, favorites | `id: int`, `url`, `name`, `albums_count` |
+| `ArtistDetail` | `get_artist` | `ArtistSummary` fields, plus `biography` (from `biography.content`), `albums: Page[AlbumSummary]` |
+| `LabelDetail` | `get_label` | `id: int`, `url`, `name`, `description`, `albums: Page[AlbumSummary]` |
+| `PlaylistSummary` | search, featured playlists, user playlists, playlist writes | `id: int`, `url`, `name`, `description`, `owner: OwnerRef`, `tracks_count`, `duration_seconds`, `is_public`, `is_collaborative`, `updated_at` |
+| `PlaylistDetail` | `get_playlist` | `PlaylistSummary` fields, plus `genres: list[GenreRef]`, `entries: Page[PlaylistEntry]` |
+| `PlaylistEntry` | `PlaylistDetail` | `playlist_track_id`, `position`, `track: TrackSummary` |
+| `Genre` | `list_genres` | `id`, `name`, `path: list[int]` (IDs of the parent genres) |
 
-Rules:
+### Tool results
 
-- Every catalog model carries `id` and `url` (FS-BEH-1).
-- Summaries hold what the assistant needs to pick an item. Details add what the tool's description promises (FS section 5).
-- Third-party text fields (names, descriptions, biographies, editorial texts) are returned as plain strings, unmodified (FS-BEH-4).
+| Tool | Result |
+|---|---|
+| `search_catalog` | `Page` of the model matching `type`: `AlbumSummary`, `ArtistSummary`, `TrackSummary` or `PlaylistSummary` |
+| `get_album`, `get_track`, `get_artist`, `get_label`, `get_playlist` | The matching detail model |
+| `get_similar_artists` | `Page[ArtistSummary]` |
+| `list_genres` | `Page[Genre]` |
+| `list_featured_albums` | `Page[AlbumSummary]` |
+| `list_featured_playlists`, `list_my_playlists` | `Page[PlaylistSummary]` |
+| `list_favorites` | `Page` of `Favorite[AlbumSummary]`, `Favorite[ArtistSummary]` or `Favorite[TrackSummary]`, matching `type`, newest first, as Qobuz returns them |
+| `list_purchases` | `Page` of `AlbumSummary` or `TrackSummary`, matching `type`. Assumed to share the album and track structures: the test account had no purchase to observe |
+| `create_playlist`, `update_playlist`, `add_tracks_to_playlist`, `remove_tracks_from_playlist`, `move_playlist_tracks` | `PlaylistSummary`, the playlist's state after the write, as returned by Qobuz |
+| `delete_playlist`, `add_favorites`, `remove_favorites`, `follow_playlist`, `unfollow_playlist` | `WriteResult`: `status`, the value Qobuz returns (`success` when the write succeeded) |
 
-Observed during the proof of concept, to be settled in the "Output models" step:
-
-- Every list response has `items`, `total`, `limit` and `offset`, except the `artists` group of `catalog/search`, which has no `limit` or `offset`. `Page[T]` fills them from the request.
-- `track/get` returns credits as one formatted string (`performers`), plus the main `performer` as an object.
-- `playlist/create`, `addTracks`, `updateTracksPosition`, `deleteTracks` and `update` return the playlist object. `playlist/delete`, favorites and follow endpoints return only `{"status": ...}`.
+`AlbumDetail.tracks` is the page of tracks Qobuz returns with the album. Its `total` tells whether the tracklist is complete. Only one album was observed, so the page size for long albums (box sets) is checked when `get_album` is implemented.
 
 ## 11. Development commands
 
