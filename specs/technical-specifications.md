@@ -256,7 +256,7 @@ Tool results are pydantic models in `models.py`. They are the contract the assis
 | `TrackSummary` | search, album tracklist, playlist entries, favorites, purchases | `id: int`, `url`, `title`, `version`, `performer: ArtistRef`, `album: AlbumRef`, `track_number`, `media_number`, `duration_seconds`, `audio_quality: AudioQuality`, `parental_warning`, `streamable` |
 | `TrackDetail` | `get_track` | `TrackSummary` fields, plus `composer: ArtistRef`, `work`, `credits` (the raw `performers` string, not parsed: its format is not documented), `isrc`, `copyright`, `release_date` |
 | `ArtistSummary` | search, similar artists, favorites | `id: int`, `url`, `name`, `albums_count` |
-| `ArtistDetail` | `get_artist` | `ArtistSummary` fields, plus `biography` (from `biography.content`), `albums: Page[AlbumSummary]` |
+| `ArtistDetail` | `get_artist` | `ArtistSummary` fields, plus `biography_summary` (from `biography.summary`, about 450 characters), `biography` (from `biography.content`, 2,000 to 12,000 characters observed: only when `full_biography` is `true`, `None` otherwise), `albums: Page[AlbumSummary]` |
 | `LabelDetail` | `get_label` | `id: int`, `url`, `name`, `description`, `albums: Page[AlbumSummary]` |
 | `PlaylistSummary` | search, featured playlists, user playlists, playlist writes | `id: int`, `url`, `name`, `description`, `owner: OwnerRef`, `tracks_count`, `duration_seconds`, `is_public`, `is_collaborative`, `updated_at` |
 | `PlaylistDetail` | `get_playlist` | `PlaylistSummary` fields, plus `genres: list[GenreRef]`, `entries: Page[PlaylistEntry]` |

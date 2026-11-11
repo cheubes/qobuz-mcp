@@ -70,7 +70,7 @@ Each tool declares MCP annotations. Read-only tools can be allowlisted once in t
 | `search_catalog` | Search albums, artists, tracks or playlists | `query`, `type`, `limit`, `offset` |
 | `get_album` | Album details: paginated tracklist, audio quality (bit depth, sample rate), label, release date, genre, description, booklet link | `album_id`, `limit`, `offset` (for the tracklist) |
 | `get_track` | Track details, including performers and credits | `track_id` |
-| `get_artist` | Biography and paginated discography | `artist_id`, `limit`, `offset` |
+| `get_artist` | Biography summary, full biography on request, and paginated discography | `artist_id`, `full_biography` (optional, default `false`), `limit`, `offset` |
 | `get_similar_artists` | Artists similar to a given artist | `artist_id`, `limit` |
 | `get_label` | Label details and paginated albums | `label_id`, `limit`, `offset` |
 | `get_playlist` | Playlist details and paginated tracks | `playlist_id`, `limit`, `offset` |
