@@ -108,9 +108,9 @@ async def test_default_page_size_and_page_fields(
     """AC-BEH-02"""
     page = await search(client, type="albums")
     request = fake_qobuz.api_requests("catalog/search")[-1]
-    assert request.url.params["limit"] == "20"
+    assert request.url.params["limit"] == "25"
     assert request.url.params["offset"] == "0"
-    assert len(page["items"]) <= 20
+    assert len(page["items"]) <= 25
     assert (page["total"], page["limit"], page["offset"]) == (57, 2, 0)
 
 

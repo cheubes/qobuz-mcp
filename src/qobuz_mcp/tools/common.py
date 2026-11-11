@@ -8,7 +8,7 @@ from qobuz_mcp.api import QobuzClient
 from qobuz_mcp.credentials import load_credentials
 from qobuz_mcp.errors import AuthenticationError
 
-DEFAULT_LIMIT = 20
+DEFAULT_LIMIT = 25
 MAX_LIMIT = 100
 
 Limit = Annotated[

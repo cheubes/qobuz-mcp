@@ -16,3 +16,18 @@ async def test_search_finds_albums_of_a_well_known_artist(live_client: Client[An
     album = page["items"][0]
     assert album["id"]
     assert album["url"] == f"https://open.qobuz.com/album/{album['id']}"
+
+
+async def test_get_album_returns_a_tracklist_and_audio_quality(live_client: Client[Any]) -> None:
+    """AC-LIVE-03"""
+    search = await live_client.call_tool(
+        "search_catalog", {"query": "Miles Davis Kind of Blue", "type": "albums", "limit": 1}
+    )
+    album_id = search.structured_content["result"]["items"][0]["id"]  # type: ignore[index]
+    result = await live_client.call_tool("get_album", {"album_id": album_id})
+    album = result.structured_content
+    assert album is not None
+    assert album["tracks"]["items"]
+    assert album["tracks"]["total"] >= len(album["tracks"]["items"])
+    assert album["audio_quality"]["bit_depth"]
+    assert album["audio_quality"]["sampling_rate_khz"]

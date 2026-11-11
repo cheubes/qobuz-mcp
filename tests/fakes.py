@@ -19,6 +19,7 @@ FAKE_CODE = "fake-authorization-code"
 FAKE_TOKEN = "fake-user-auth-token"
 SEARCH_RESULTS = json.loads((FIXTURES / "api" / "catalog_search.json").read_text())
 SEARCH_TYPES = ("albums", "artists", "tracks", "playlists")
+ALBUM = json.loads((FIXTURES / "api" / "album_get.json").read_text())
 
 
 @dataclass
@@ -65,6 +66,10 @@ class FakeQobuz:
                 for group in SEARCH_TYPES
             }
             return httpx2.Response(200, json=payload)
+        if endpoint == "album/get":
+            if request.url.params["album_id"] != ALBUM["id"]:
+                return httpx2.Response(404, json={"status": "error", "code": 404})
+            return httpx2.Response(200, json=ALBUM)
         return httpx2.Response(404)
 
     def api_requests(self, endpoint: str) -> list[httpx2.Request]:

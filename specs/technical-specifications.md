@@ -179,7 +179,7 @@ All endpoints below were called successfully during the proof of concept.
 | `login` | `oauth/callback` | `code`, `private_key` (section 6) |
 | `login --token` | `user/get` | Token validation: 200 when valid, 401 otherwise |
 | `search_catalog` | `catalog/search` | `query`, `type` (`albums`, `artists`, `tracks`, `playlists`), `limit`, `offset`. With `type`, the other result groups come back empty |
-| `get_album` | `album/get` | `album_id`. The booklet is in `goodies` |
+| `get_album` | `album/get` | `album_id`, `limit`, `offset` (for the tracklist; Qobuz returns up to 500 tracks without them). The booklet is in `goodies` |
 | `get_track` | `track/get` | `track_id`. Credits come as one string in `performers` |
 | `get_artist` | `artist/get` | `artist_id`, `extra=albums`, `limit`, `offset` |
 | `get_similar_artists` | `artist/getSimilarArtists` | `artist_id`, `limit`, `offset` |
@@ -278,7 +278,7 @@ Tool results are pydantic models in `models.py`. They are the contract the assis
 | `create_playlist`, `update_playlist`, `add_tracks_to_playlist`, `remove_tracks_from_playlist`, `move_playlist_tracks` | `PlaylistSummary`, the playlist's state after the write, as returned by Qobuz |
 | `delete_playlist`, `add_favorites`, `remove_favorites`, `follow_playlist`, `unfollow_playlist` | `WriteResult`: `status`, the value Qobuz returns (`success` when the write succeeded) |
 
-`AlbumDetail.tracks` is the page of tracks Qobuz returns with the album. Its `total` tells whether the tracklist is complete. Only one album was observed, so the page size for long albums (box sets) is checked when `get_album` is implemented.
+`AlbumDetail.tracks` is one page of the tracklist, paginated like any list (FS-BEH-1). Its `total` tells whether more tracks exist. Tracks inside an album carry no `album` object in Qobuz's answer, so `album` is filled from the album itself.
 
 ## 11. Development commands
 

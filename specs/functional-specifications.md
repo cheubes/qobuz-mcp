@@ -68,7 +68,7 @@ Each tool declares MCP annotations. Read-only tools can be allowlisted once in t
 | Tool | Description | Main inputs |
 |---|---|---|
 | `search_catalog` | Search albums, artists, tracks or playlists | `query`, `type`, `limit`, `offset` |
-| `get_album` | Album details: tracklist, audio quality (bit depth, sample rate), label, release date, genre, description, booklet link | `album_id` |
+| `get_album` | Album details: paginated tracklist, audio quality (bit depth, sample rate), label, release date, genre, description, booklet link | `album_id`, `limit`, `offset` (for the tracklist) |
 | `get_track` | Track details, including performers and credits | `track_id` |
 | `get_artist` | Biography and paginated discography | `artist_id`, `limit`, `offset` |
 | `get_similar_artists` | Artists similar to a given artist | `artist_id`, `limit` |
@@ -109,7 +109,7 @@ A playlist can contain the same track twice. Removal and reordering therefore ta
 
 - Results contain only the fields useful to the assistant, not the raw API payload.
 - Every catalog item includes its Qobuz ID and its public web URL (`https://open.qobuz.com/...`).
-- Lists are paginated with `limit` and `offset`. `limit` defaults to 20, with a maximum of 100. Each list result states the total count, so the assistant knows whether more results exist.
+- Lists are paginated with `limit` and `offset`. `limit` defaults to 25, with a maximum of 100. Each list result states the total count, so the assistant knows whether more results exist.
 - Catalog content (descriptions, genre names) is returned in the language Qobuz associates with the account's country. There is no language override.
 
 ### FS-BEH-2: errors
@@ -184,7 +184,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 ### Cross-cutting behaviors
 
 - **AC-BEH-01** [test] The server exposes exactly the tools listed in section 5, each with the annotation listed there.
-- **AC-BEH-02** [test] Given a list tool called without `limit`, then the result holds at most 20 items and states `total`, `limit` and `offset`.
+- **AC-BEH-02** [test] Given a list tool called without `limit`, then the result holds at most 25 items and states `total`, `limit` and `offset`.
 - **AC-BEH-03** [test] Given a list tool called with `limit` above 100, then the call is rejected with a validation error and no request is sent to Qobuz.
 - **AC-BEH-04** [test] Every catalog item in every result includes its Qobuz ID and its `https://open.qobuz.com/` URL.
 - **AC-BEH-05** [test] Given no stored credentials, when any tool is called, then the error asks the user to run `qobuz-mcp login`.
