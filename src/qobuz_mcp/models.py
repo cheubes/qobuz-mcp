@@ -100,6 +100,15 @@ class TrackSummary(BaseModel):
     streamable: bool | None
 
 
+class TrackDetail(TrackSummary):
+    composer: ArtistRef | None
+    work: str | None
+    credits: str | None
+    isrc: str | None
+    copyright: str | None
+    release_date: str | None
+
+
 class AlbumDetail(AlbumSummary):
     artists: list[ArtistCredit]
     composer: ArtistRef | None
@@ -207,6 +216,19 @@ def track_summary(raw: dict[str, Any]) -> TrackSummary:
         audio_quality=_audio_quality(raw),
         parental_warning=raw.get("parental_warning"),
         streamable=raw.get("streamable"),
+    )
+
+
+def track_detail(raw: dict[str, Any]) -> TrackDetail:
+    return TrackDetail(
+        **track_summary(raw).model_dump(),
+        composer=_ref(ArtistRef, raw.get("composer")),
+        work=raw.get("work"),
+        # Qobuz formats the credits as one undocumented string: returned as is, not parsed.
+        credits=raw.get("performers"),
+        isrc=raw.get("isrc"),
+        copyright=raw.get("copyright"),
+        release_date=raw.get("release_date_original"),
     )
 
 

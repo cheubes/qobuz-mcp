@@ -1,0 +1,22 @@
+{
+  "id": 101,
+  "title": "Synthetic Track",
+  "version": null,
+  "performer": {"id": 11, "name": "Synthetic Artist"},
+  "performers": "Synthetic Artist, MainArtist - Synthetic Pianist, Piano - Synthetic Composer, Composer",
+  "composer": {"id": 13, "name": "Synthetic Composer"},
+  "work": null,
+  "album": {"id": "0000000000001", "title": "First Synthetic Album", "artist": {"id": 11, "name": "Synthetic Artist"}},
+  "track_number": 1,
+  "media_number": 1,
+  "duration": 545,
+  "isrc": "ZZ0000000001",
+  "copyright": "1959 Synthetic Records",
+  "release_date_original": "1959-08-17",
+  "maximum_bit_depth": 24,
+  "maximum_sampling_rate": 192,
+  "maximum_channel_count": 2,
+  "hires": true,
+  "parental_warning": false,
+  "streamable": true
+}
