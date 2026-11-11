@@ -22,6 +22,7 @@ SEARCH_RESULTS = json.loads((FIXTURES / "api" / "catalog_search.json").read_text
 SEARCH_TYPES = ("albums", "artists", "tracks", "playlists")
 ALBUM = json.loads((FIXTURES / "api" / "album_get.json").read_text())
 TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
+PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 
 
 @dataclass
@@ -77,6 +78,10 @@ class FakeQobuz:
             if request.url.params["track_id"] != str(TRACK["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=self.track)
+        if endpoint == "playlist/get":
+            if request.url.params["playlist_id"] != str(PLAYLIST["id"]):
+                return httpx2.Response(404, json={"status": "error", "code": 404})
+            return httpx2.Response(200, json=PLAYLIST)
         return httpx2.Response(404)
 
     def api_requests(self, endpoint: str) -> list[httpx2.Request]:

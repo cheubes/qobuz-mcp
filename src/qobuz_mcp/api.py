@@ -75,6 +75,12 @@ class QobuzClient:
     async def get_album(self, album_id: str, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get("album/get", {"album_id": album_id, "limit": limit, "offset": offset})
 
+    async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
+        return await self.get(
+            "playlist/get",
+            {"playlist_id": playlist_id, "extra": "tracks", "limit": limit, "offset": offset},
+        )
+
     async def get_track(self, track_id: int) -> dict[str, Any]:
         return await self.get("track/get", {"track_id": track_id})
 

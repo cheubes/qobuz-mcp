@@ -8,6 +8,7 @@ from qobuz_mcp.models import (
     AlbumSummary,
     ArtistSummary,
     Page,
+    PlaylistDetail,
     PlaylistSummary,
     TrackDetail,
     TrackSummary,
@@ -15,6 +16,7 @@ from qobuz_mcp.models import (
     album_summary,
     artist_summary,
     page_fields,
+    playlist_detail,
     playlist_summary,
     track_detail,
     track_summary,
@@ -83,3 +85,19 @@ async def get_track(
     `credits` is Qobuz's own text listing every contributor with their roles.
     """
     return track_detail(await qobuz(ctx).get_track(track_id))
+
+
+async def get_playlist(
+    ctx: Context,
+    playlist_id: Annotated[int, Field(ge=1, description="Qobuz playlist ID (an integer).")],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> PlaylistDetail:
+    """Get a playlist's details and its entries, paginated with `limit` and `offset`.
+
+    Each entry has a `playlist_track_id`, which identifies that entry in the playlist (the same
+    track can appear twice), and the track itself with its `id`. Removing or moving entries
+    takes `playlist_track_id` values.
+    """
+    payload = await qobuz(ctx).get_playlist(playlist_id, limit=limit, offset=offset)
+    return playlist_detail(payload, limit=limit, offset=offset)
