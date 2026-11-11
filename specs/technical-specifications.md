@@ -67,10 +67,12 @@ src/qobuz_mcp/
         library.py       # FS 5.2 and favorites writes
         playlists.py     # playlist writes
 tests/
+    __init__.py
     conftest.py
     memory_keyring.py    # in-memory keyring backend
     fixtures/            # synthetic API payloads and web player snippets
     unit/
+        __init__.py
     live/
 ```
 
@@ -84,7 +86,7 @@ All configuration lives in `pyproject.toml`.
 - `[dependency-groups]`: `dev` group (section 1).
 - `[tool.uv]`: `required-version`, set at scaffold time to the current uv minor version (`>=0.13,<0.14` as of 0.13.7). `astral-sh/setup-uv` reads it, so CI and local runs use the same uv.
 - `[tool.ruff]`: `line-length = 100`. Rule sets: `E`, `W`, `F`, `I` (imports), `N` (PEP 8 naming), `UP` (pyupgrade), `B` (bugbear), `SIM`, `ASYNC`, `RUF`. The target version is derived from `requires-python`.
-- `[tool.mypy]`: `strict = true`, `plugins = ["pydantic.mypy"]`, applied to `src/`, `tests/` and `scripts/`.
+- `[tool.mypy]`: `strict = true`, `plugins = ["pydantic.mypy"]`, `files` covering `src/`, `tests/` and `scripts/`.
 - `[tool.coverage]`: `source = ["qobuz_mcp"]`, `branch = true`, `fail_under = 90`.
 - `[tool.pytest.ini_options]`: `testpaths = ["tests"]`, `addopts = ["--strict-markers"]`, marker `live` declared with its description.
 
