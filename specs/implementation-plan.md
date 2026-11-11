@@ -6,7 +6,7 @@ Each step lists the acceptance criteria it delivers (`Delivers`, from [functiona
 
 From step 3 on, every step ships its code with its tests, and all local checks pass before it is checked.
 
-- [ ] **1. Proof of concept**
+- [x] **1. Proof of concept**
   A throwaway script, outside the repository. It answers open questions Q1 to Q3 and confirms:
   - the `app_id` extraction patterns;
   - the unvalidated endpoints of the endpoint mapping;
@@ -32,10 +32,10 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   The publication version of `README.md`, `codeql.yml`, `CONTRIBUTING.md`, `SECURITY.md`, issue and pull request templates, repository settings, switch to public (technical specifications, "Publication").
   Delivers: none.
   Done when: the repository is public with every setting applied.
-- [ ] **6. Credentials, `app_id` extraction, `login` and `logout`**
+- [ ] **6. Credentials, web player values, OAuth `login`, `login --token` and `logout`**
   Includes the live test harness and its write guard.
-  Delivers: AC-SETUP-01, AC-SETUP-02, AC-SETUP-03, AC-SETUP-04, AC-SETUP-05, AC-SETUP-07, AC-SETUP-10, AC-LIVE-01, AC-LIVE-05.
-  Done when: the criteria are covered and all checks pass.
+  Delivers: AC-SETUP-03, AC-SETUP-04, AC-SETUP-05, AC-SETUP-07, AC-SETUP-10, AC-SETUP-12, AC-SETUP-13, AC-SETUP-14, AC-SETUP-15, AC-SETUP-16, AC-SETUP-17, AC-SETUP-18, AC-LIVE-01, AC-LIVE-05, AC-LIVE-06.
+  Done when: the criteria are covered, all checks pass, and AC-SETUP-18 has been checked by hand.
 - [ ] **7. API client and error mapping**
   Delivers: AC-SETUP-06, AC-BEH-13.
   Done when: the criteria are covered and all checks pass.
@@ -43,7 +43,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   Delivers: AC-SETUP-08, AC-SETUP-09, AC-BEH-02, AC-BEH-03, AC-BEH-04, AC-BEH-05, AC-BEH-06, AC-BEH-07, AC-BEH-08, AC-BEH-10, AC-BEH-11, AC-BEH-12, AC-BEH-14, AC-CAT-01, AC-CAT-02, AC-CAT-03, AC-CAT-04, AC-LIVE-02, AC-LIVE-03.
   Done when: the criteria are covered and all checks pass.
 - [ ] **9. Library read tools**
-  Delivers: AC-LIB-01, AC-LIVE-04.
+  Delivers: AC-LIB-01, AC-LIB-04, AC-LIVE-04.
   Done when: the criteria are covered and all checks pass.
 - [ ] **10. Write tools**
   The AC-BEH-11 tests from step 8 are extended to the AC-BEH-09 error case.

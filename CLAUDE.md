@@ -49,7 +49,7 @@ uv run python scripts/check_traceability.py
 The credentials in the Keychain belong to the user's real Qobuz account, and the API is unofficial.
 
 - Never call a write endpoint against the real account (scripts, manual tests, MCP Inspector) without explicit approval for that specific call. Live tests are read-only and must stay so.
-- Never display, log or commit a token, a password or the content of the Keychain item.
+- Never display, log or commit a token, an authorization code, a password or the content of the Keychain item.
 - Test fixtures are synthetic (ADR-0023). Never save a real API response, the web player HTML or bundle, a real `app_id` or any account data in the repository.
 - Exploration and proof-of-concept scripts live outside the repository.
 

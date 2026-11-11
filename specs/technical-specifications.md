@@ -55,7 +55,8 @@ src/qobuz_mcp/
     __main__.py          # python -m qobuz_mcp
     cli.py               # serve, login, logout
     credentials.py       # Keychain read/write
-    app_id.py            # app_id extraction from the web player
+    web_player.py        # app_id and OAuth private key extraction
+    oauth.py             # OAuth browser flow and local callback server
     api.py               # QobuzClient: HTTP calls, auth headers, error mapping
     errors.py            # exception hierarchy
     models.py            # pydantic output models and mapping from raw payloads
@@ -94,30 +95,46 @@ Async tests use the anyio plugin (`@pytest.mark.anyio`), with the `anyio_backend
 | Command | Behavior |
 |---|---|
 | `qobuz-mcp serve` | Starts the MCP server on stdio |
-| `qobuz-mcp login` | Prompts for email (`input`) and password (`getpass`), extracts the `app_id`, calls `user/login`, stores credentials |
-| `qobuz-mcp login --token` | Prompts for a token (`getpass`), extracts the `app_id`, validates the token with an authenticated call (section 8), stores credentials |
+| `qobuz-mcp login` | Extracts the web player values (section 6), runs the OAuth browser flow (section 6), stores credentials |
+| `qobuz-mcp login --token` | Prompts for a token (`getpass`), extracts the `app_id`, validates the token with `user/get` (section 8), stores credentials |
 | `qobuz-mcp logout` | Deletes the Keychain entry |
 
-`login` prints the account's display name on success and never echoes the token or password.
+`login` prints the account's display name on success and never echoes the token or the authorization code.
 
 ## 5. Credentials
 
 - One Keychain item: service `qobuz-mcp`, account `default`.
-- Value: JSON object `{"app_id": str, "user_auth_token": str, "user_id": int}`. `user_id` is kept only if an in-scope endpoint needs it (validated in the proof of concept).
+- Value: JSON object `{"app_id": str, "user_auth_token": str}`. No in-scope endpoint needs the user ID: the token identifies the user.
 - `QOBUZ_APP_ID`, when set, overrides the stored `app_id` at read time.
 - The server reads the item at each tool call, with no in-memory cache. `login` and `logout` therefore take effect on the next call without restarting the client (FS-SETUP-2). A cache would keep using the token after `logout`, since logging out does not revoke the token on Qobuz's side.
 - A missing item does not prevent the server from starting: tools return the "not logged in" error (FS-BEH-2) until the user logs in.
 
 Known limitation: Keychain access is granted to the Python interpreter binary that created the item. When uv upgrades the interpreter, macOS asks again for Keychain access on the next run.
 
-## 6. `app_id` extraction
+## 6. Web player values and OAuth login
+
+### Extraction
+
+The CLI reads two values from the web player bundle. The login page needs no specific `User-Agent`.
 
 1. `GET https://play.qobuz.com/login`.
-2. Find the bundle URL in the HTML: pattern `/resources/<version>/bundle.js`.
-3. `GET` the bundle.
-4. Extract the production `app_id` with a regular expression on the bundle's config object.
+2. Find the bundle path in the HTML: `src="(/resources/[^"]+/bundle\.js)"`.
+3. `GET` the bundle (about 10 MB).
+4. Extract:
+   - `app_id`: `production:\{api:\{appId:"(\d{9})"`, which matches the production configuration only;
+   - OAuth private key: `authenticate\(\{privateKey:"([^"]+)"`.
 
-The exact patterns are confirmed during the proof of concept (see [implementation-plan.md](implementation-plan.md)) and covered by a live test. Extraction failure raises `AppIdExtractionError`, whose message suggests setting `QOBUZ_APP_ID`.
+The patterns were confirmed during the proof of concept on bundle `8.3.0-b029` and are covered by live tests (AC-LIVE-01, AC-LIVE-06). An `app_id` extraction failure raises `AppIdExtractionError`, whose message suggests setting `QOBUZ_APP_ID`. A private key extraction failure raises `PrivateKeyExtractionError`, whose message suggests `login --token`. The bundle also holds an `appSecret`, which the server does not need: no in-scope endpoint requires a request signature.
+
+### OAuth browser flow
+
+1. Start an HTTP server on `127.0.0.1`, on a free port chosen by the OS, accepting only `GET /callback/<nonce>`, where `<nonce>` is a random value generated for this login. Every other request gets a 404 and is ignored (AC-SETUP-14).
+2. Open `https://www.qobuz.com/signin/oauth?ext_app_id=<app_id>&redirect_url=<callback URL>` with `webbrowser`, and print it.
+3. Qobuz redirects the browser to `<callback URL>?code_autorisation=<code>`. The server answers with a short page telling the user to close the tab, then stops.
+4. `GET oauth/callback?code=<code>&private_key=<private key>` with `X-App-Id`. The response holds `token` and `user_id`, and only `token` is kept.
+5. Store the credentials (section 5).
+
+Timeout: 5 minutes, after which the server stops and nothing is stored. Qobuz accepted a `127.0.0.1` redirect during the proof of concept. The random path segment keeps a stray or forged request from being taken for the callback, since the flow has no `state` parameter.
 
 ## 7. Qobuz API client
 
@@ -126,9 +143,12 @@ The exact patterns are confirmed during the proof of concept (see [implementatio
 - Base URL: `https://www.qobuz.com/api.json/0.2/`.
 - Headers on every call: `X-App-Id`, and `X-User-Auth-Token` for authenticated calls.
 - Timeout: 15 seconds.
-- `user/login` sends the credentials in a POST form body, never in the query string.
 - One method per endpoint, returning the parsed JSON. Mapping to output models happens in `models.py`, not in the client.
 - No client-side cache, no retry, no throttling.
+- Reads are `GET` with query parameters. Writes are `POST` with an `application/x-www-form-urlencoded` body, as the web player does.
+- ID lists are sent comma-separated (`track_ids=1,2,3`). Booleans are sent as `true` or `false`.
+- Every catalog endpoint requires the token, including `catalog/search`.
+- No specific `User-Agent` is required. The HTTP client's default is kept.
 
 ### Error mapping
 
@@ -145,33 +165,35 @@ All inherit from `QobuzError`. Tool handlers let these propagate. A single conve
 
 ## 8. Endpoint mapping
 
-| Tool or command | Endpoint | To validate |
+All endpoints below were called successfully during the proof of concept.
+
+| Tool or command | Endpoint | Parameters and notes |
 |---|---|---|
-| `login` | `user/login` | captcha (FS Q1) |
-| `login --token` | `user/get` | existence |
-| `search_catalog` | `catalog/search` | |
-| `get_album` | `album/get` | |
-| `get_track` | `track/get` | |
-| `get_artist` | `artist/get` (`extra=albums`) | |
-| `get_similar_artists` | `artist/getSimilarArtists` | yes |
-| `get_label` | `label/get` (`extra=albums`) | |
-| `get_playlist` | `playlist/get` (`extra=tracks`) | |
-| `list_genres` | `genre/list` | |
-| `list_featured_albums` | `album/getFeatured` | category values |
-| `list_featured_playlists` | `playlist/getFeatured` | category values |
-| `list_favorites` | `favorite/getUserFavorites` | |
-| `list_my_playlists` | `playlist/getUserPlaylists` | |
-| `list_purchases` | `purchase/getUserPurchases` | signature (FS Q2) |
-| `add_favorites` | `favorite/create` | |
-| `remove_favorites` | `favorite/delete` | |
-| `create_playlist` | `playlist/create` | |
-| `update_playlist` | `playlist/update` | |
-| `add_tracks_to_playlist` | `playlist/addTracks` | |
-| `remove_tracks_from_playlist` | `playlist/deleteTracks` | |
-| `move_playlist_tracks` | `playlist/updateTracksPosition` | existence (FS Q3) |
-| `delete_playlist` | `playlist/delete` | |
-| `follow_playlist` | `playlist/subscribe` | |
-| `unfollow_playlist` | `playlist/unsubscribe` | |
+| `login` | `oauth/callback` | `code`, `private_key` (section 6) |
+| `login --token` | `user/get` | Token validation: 200 when valid, 401 otherwise |
+| `search_catalog` | `catalog/search` | `query`, `type` (`albums`, `artists`, `tracks`, `playlists`), `limit`, `offset`. With `type`, the other result groups come back empty |
+| `get_album` | `album/get` | `album_id`. The booklet is in `goodies` |
+| `get_track` | `track/get` | `track_id`. Credits come as one string in `performers` |
+| `get_artist` | `artist/get` | `artist_id`, `extra=albums`, `limit`, `offset` |
+| `get_similar_artists` | `artist/getSimilarArtists` | `artist_id`, `limit`, `offset` |
+| `get_label` | `label/get` | `label_id`, `extra=albums`, `limit`, `offset` |
+| `get_playlist` | `playlist/get` | `playlist_id`, `extra=tracks`, `limit`, `offset`. Entries carry `playlist_track_id` and `position` |
+| `list_genres` | `genre/list` | `parent_id` (optional) |
+| `list_featured_albums` | `album/getFeatured` | `type`, `genre_ids` (optional), `limit`, `offset`. Accepted `type` values, as listed by the API: `new-releases`, `new-releases-full`, `recent-releases`, `press-awards`, `best-sellers`, `most-streamed`, `editor-picks`, `most-featured`, `ideal-discography`, `qobuzissims`, `harmonia-mundi`, `universal-classic`, `universal-jazz`, `universal-jeunesse`, `universal-chanson` |
+| `list_featured_playlists` | `playlist/getFeatured` | `type=editor-picks` (sent as the web player does, but ignored by the API), `genre_ids` (optional), `limit`, `offset` |
+| `list_favorites` | `favorite/getUserFavorites` | `type` (`albums`, `artists`, `tracks`), `limit`, `offset` |
+| `list_my_playlists` | `playlist/getUserPlaylists` | `filter` (`owner` or `subscriber`, mapped from `owned` and `followed`; omitted for both), `limit`, `offset` |
+| `list_purchases` | `purchase/getUserPurchases` | `type` (`albums`, `tracks`), `limit`, `offset`. No signature needed |
+| `add_favorites` | `favorite/create` | `album_ids`, `artist_ids`, `track_ids` |
+| `remove_favorites` | `favorite/delete` | `album_ids`, `artist_ids`, `track_ids` |
+| `create_playlist` | `playlist/create` | `name`, `description`, `is_public`, `is_collaborative` |
+| `update_playlist` | `playlist/update` | `playlist_id` and the fields to change only. Omitted fields are kept |
+| `add_tracks_to_playlist` | `playlist/addTracks` | `playlist_id`, `track_ids`, `no_duplicate` |
+| `remove_tracks_from_playlist` | `playlist/deleteTracks` | `playlist_id`, `playlist_track_ids` |
+| `move_playlist_tracks` | `playlist/updateTracksPosition` | `playlist_id`, `playlist_track_ids`, `insert_before`: the entries are moved before the entry currently at that 1-based position, `0` meaning first. Moving to the end (`tracks_count + 1`) is inferred, not observed |
+| `delete_playlist` | `playlist/delete` | `playlist_id` |
+| `follow_playlist` | `playlist/subscribe` | `playlist_id` |
+| `unfollow_playlist` | `playlist/unsubscribe` | `playlist_id` |
 
 ## 9. MCP server
 
@@ -209,6 +231,12 @@ Rules:
 - Every catalog model carries `id` and `url` (FS-BEH-1).
 - Summaries hold what the assistant needs to pick an item. Details add what the tool's description promises (FS section 5).
 - Third-party text fields (names, descriptions, biographies, editorial texts) are returned as plain strings, unmodified (FS-BEH-4).
+
+Observed during the proof of concept, to be settled in the "Output models" step:
+
+- Every list response has `items`, `total`, `limit` and `offset`, except the `artists` group of `catalog/search`, which has no `limit` or `offset`. `Page[T]` fills them from the request.
+- `track/get` returns credits as one formatted string (`performers`), plus the main `performer` as an object.
+- `playlist/create`, `addTracks`, `updateTracksPosition`, `deleteTracks` and `update` return the playlist object. `playlist/delete`, favorites and follow endpoints return only `{"status": ...}`.
 
 ## 11. Development commands
 
@@ -259,10 +287,12 @@ Claude Desktop (`claude_desktop_config.json`). The absolute path to `uv` is requ
   - a criterion is delivered by no step, or by more than one;
   - a step delivers an unknown ID;
   - a `[test]` or `[live]` criterion of a checked step is not cited by any test;
-  - a test cites an unknown ID.
+  - a test cites an unknown ID;
+  - a `[retired]` criterion is delivered by a step or cited by a test.
+  `[retired]` criteria are otherwise ignored.
 - Unit tests use an in-memory `keyring` backend (`tests/memory_keyring.py`), selected through the `PYTHON_KEYRING_BACKEND` environment variable set in `tests/conftest.py`. Subprocesses started by tests, such as the stdio server of AC-BEH-12, inherit it, so no unit test ever touches the real Keychain.
 - Live tests select the macOS Keychain backend explicitly in `tests/live/conftest.py`. If no credentials are found, they are skipped with the reason "not logged in: run `qobuz-mcp login`".
-- Live tests never call write endpoints. A request hook on the live `httpx2` client allows only the endpoints of `read-only` tools (FS section 5) and of `app_id` extraction, and fails the test otherwise (AC-LIVE-05).
+- Live tests never call write endpoints. A request hook on the live `httpx2` client allows only the endpoints of `read-only` tools (FS section 5), `user/get` and the web player pages, and fails the test otherwise (AC-LIVE-05).
 - `pytest -m "not live"` excludes them.
 - Fixtures are synthetic: hand-written minimal JSON reproducing the structure of real responses observed during the proof of concept, with fake IDs, names and texts. The web player HTML and bundle fixtures are small invented snippets containing only the patterns searched for and a fake `app_id`. No real API response, Qobuz file or account data is ever committed (ADR-0023).
 

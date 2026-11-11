@@ -32,12 +32,14 @@ A local MCP server that lets an AI assistant (Claude Desktop, Claude Code) explo
 
 The user runs a one-time command: `qobuz-mcp login`.
 
-1. The command prompts for the Qobuz email and password (password input hidden).
-2. It retrieves the current `app_id` from the Qobuz web player.
-3. It authenticates against Qobuz and obtains a user auth token.
-4. It stores the token and the `app_id` in the macOS Keychain. The password is never stored.
+1. The command retrieves the current `app_id` and OAuth private key from the Qobuz web player.
+2. It opens the Qobuz sign-in page in the user's browser, and also prints its URL. The user signs in on Qobuz's own page, reCAPTCHA included. The CLI never sees the password.
+3. Qobuz redirects the browser to a temporary local address served by the CLI, with an authorization code.
+4. The CLI exchanges the code for a user auth token, and stores the token and the `app_id` in the macOS Keychain.
 
-Alternative: `qobuz-mcp login --token` prompts for a token copied manually from the web player, for the case where API login is blocked.
+The sign-in must complete within 5 minutes, otherwise the command fails and stores nothing.
+
+Alternative: `qobuz-mcp login --token` prompts for a token copied by hand from the web player, for the case where the browser flow breaks. The README explains how to find it: in the browser's developer tools, the `X-User-Auth-Token` header of any request to the Qobuz API.
 
 Override: if the `QOBUZ_APP_ID` environment variable is set, it takes precedence over the extracted value.
 
@@ -73,15 +75,15 @@ Each tool declares MCP annotations. Read-only tools can be allowlisted once in t
 | `get_label` | Label details and paginated albums | `label_id`, `limit`, `offset` |
 | `get_playlist` | Playlist details and paginated tracks | `playlist_id`, `limit`, `offset` |
 | `list_genres` | Genre tree | `parent_genre_id` (optional) |
-| `list_featured_albums` | Editorial album lists (new releases, press awards, best sellers, editor picks, ideal discography, Qobuzissimes) | `category`, `genre_id` (optional), `limit`, `offset` |
-| `list_featured_playlists` | Editorial playlists | `category`, `genre_id` (optional), `limit`, `offset` |
+| `list_featured_albums` | Editorial album lists, by category: new releases, press awards, best sellers, most streamed, editor picks, ideal discography, Qobuzissimes and the other categories Qobuz accepts | `category`, `genre_id` (optional), `limit`, `offset` |
+| `list_featured_playlists` | Editorial playlists, optionally for one genre | `genre_id` (optional), `limit`, `offset` |
 
 ### 5.2 Library, read (read-only)
 
 | Tool | Description | Main inputs |
 |---|---|---|
 | `list_favorites` | Favorite albums, artists or tracks | `type`, `limit`, `offset` |
-| `list_my_playlists` | Playlists owned or followed by the user | `limit`, `offset` |
+| `list_my_playlists` | Playlists owned or followed by the user | `filter` (optional: `owned` or `followed`), `limit`, `offset` |
 | `list_purchases` | Purchased albums or tracks | `type`, `limit`, `offset` |
 
 ### 5.3 Library, write
@@ -125,8 +127,9 @@ Errors are returned as explicit, actionable messages:
 ### FS-BEH-3: confidentiality
 
 - Credentials are stored only in the macOS Keychain.
-- Tokens and passwords never appear in tool results, logs or error messages.
+- Tokens and authorization codes never appear in tool results, logs, error messages or CLI output. The CLI never handles the password.
 - The server and the CLI send requests only to Qobuz hosts: the API and the web player.
+- The CLI's temporary callback server listens on `127.0.0.1` only, and only during `login`.
 
 ### FS-BEH-4: untrusted content
 
@@ -152,13 +155,14 @@ Each criterion has a stable ID and a tag stating how it is verified:
 - `[test]`: automated test against a mocked Qobuz API.
 - `[live]`: automated test against the real Qobuz API, read-only.
 - `[manual]`: checked by hand.
+- `[retired]`: no longer applies. The ID is kept and never reused; the entry states which ADR retired it.
 
 Read tools that only relay the API get few criteria. Most criteria cover setup, writes, errors and cross-cutting behaviors.
 
 ### Setup
 
-- **AC-SETUP-01** [test] Given valid email and password, when the user runs `login`, then the Keychain item contains the `app_id` and the token, and does not contain the password.
-- **AC-SETUP-02** [test] Given Qobuz rejects the email and password, when the user runs `login`, then the command exits with a non-zero status and an error message, and the Keychain is unchanged.
+- **AC-SETUP-01** [retired] Email and password login (ADR-0029).
+- **AC-SETUP-02** [retired] Email and password rejection (ADR-0029).
 - **AC-SETUP-03** [test] Given a valid token, when the user runs `login --token`, then the credentials are stored.
 - **AC-SETUP-04** [test] Given an invalid token, when the user runs `login --token`, then the command exits with a non-zero status and nothing is stored.
 - **AC-SETUP-05** [test] Given the `app_id` cannot be extracted and `QOBUZ_APP_ID` is not set, when the user runs `login`, then the command fails with a message suggesting `QOBUZ_APP_ID`.
@@ -166,8 +170,15 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-SETUP-07** [test] Given stored credentials, when the user runs `logout`, then the Keychain item no longer exists.
 - **AC-SETUP-08** [test] Given a running server, when the user runs `logout`, then the next tool call returns the "not logged in" error.
 - **AC-SETUP-09** [test] Given a running server and an expired token, when the user runs `login` again, then the next tool call succeeds with the new token.
-- **AC-SETUP-10** [test] The output of `login` and `logout` never contains the token or the password.
+- **AC-SETUP-10** [test] The output of `login` and `logout` never contains the token or the authorization code.
 - **AC-SETUP-11** [manual] Given the configurations documented in the README, when Claude Desktop or Claude Code starts, then the server starts and its tools are listed.
+- **AC-SETUP-12** [test] Given the browser is redirected to the callback with an authorization code, when `login` exchanges it successfully, then the Keychain item contains the `app_id` and the token.
+- **AC-SETUP-13** [test] Given no valid redirect arrives within 5 minutes, when the user runs `login`, then the command exits with a non-zero status and nothing is stored.
+- **AC-SETUP-14** [test] Given requests to the callback server on another path, such as `/favicon.ico`, or without a code, then they are ignored, and only the first valid callback is used.
+- **AC-SETUP-15** [test] Given Qobuz rejects the authorization code, when `login` exchanges it, then the command exits with a non-zero status and nothing is stored.
+- **AC-SETUP-16** [test] The callback server listens on `127.0.0.1` only, and is closed when `login` ends.
+- **AC-SETUP-17** [test] Given the OAuth private key cannot be extracted, when the user runs `login`, then the command fails with a message suggesting `login --token`.
+- **AC-SETUP-18** [manual] Given a real Qobuz account, when the user runs `login` and signs in in the browser, then the token is stored and a tool call succeeds.
 
 ### Cross-cutting behaviors
 
@@ -181,7 +192,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-BEH-08** [test] Given an unknown ID, then the error names that ID.
 - **AC-BEH-09** [test] Given a write on a playlist the user does not own, then the error states that the playlist is not owned by the user.
 - **AC-BEH-10** [test] Given Qobuz rate limits, fails with a server error or times out, then the error states that Qobuz is unavailable and suggests retrying later.
-- **AC-BEH-11** [test] For every error case above, neither the tool result nor the logs contain the token or the password.
+- **AC-BEH-11** [test] For every error case above, neither the tool result nor the logs contain the token.
 - **AC-BEH-12** [test] Given the server runs on stdio, then every line it writes to stdout is an MCP protocol message.
 - **AC-BEH-13** [test] The server sends requests only to Qobuz hosts.
 - **AC-BEH-14** [test] The server's MCP instructions cover every point listed in FS-BEH-5.
@@ -199,6 +210,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-LIB-01** [test] Given a `type`, when `list_favorites` or `list_purchases` is called, then results contain only items of that type.
 - **AC-LIB-02** [test] Given album, artist and track IDs, when `add_favorites` or `remove_favorites` is called, then all of them are sent to Qobuz.
 - **AC-LIB-03** [test] Given no ID at all, when `add_favorites` or `remove_favorites` is called, then the call is rejected with a validation error and no request is sent.
+- **AC-LIB-04** [test] Given `filter` set to `owned` or `followed`, when `list_my_playlists` is called, then only those playlists are requested from Qobuz.
 
 ### Playlists
 
@@ -207,7 +219,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-PL-03** [test] Given no field to change, when `update_playlist` is called, then the call is rejected with a validation error and no request is sent.
 - **AC-PL-04** [test] `add_tracks_to_playlist` sends the tracks in the given order.
 - **AC-PL-05** [test] Given a playlist containing the same track twice, when `remove_tracks_from_playlist` targets one entry, then only that entry's `playlist_track_id` is sent.
-- **AC-PL-06** [test] `move_playlist_tracks` sends the entries to move and their target position (subject to Q3).
+- **AC-PL-06** [test] `move_playlist_tracks` sends the entries to move and their target position.
 - **AC-PL-07** [test] Given `create_playlist` is called without `is_public` and `is_collaborative`, then the playlist is created private and non-collaborative.
 
 ### Live
@@ -217,9 +229,8 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-LIVE-03** [live] `get_album` on an album found by search returns a non-empty tracklist and its audio quality.
 - **AC-LIVE-04** [live] `list_favorites` and `list_my_playlists` return a page with its `total`.
 - **AC-LIVE-05** [live] The live test suite never sends a request to a write endpoint: any such request fails the test run before reaching Qobuz.
+- **AC-LIVE-06** [live] OAuth private key extraction against the real web player returns a non-empty key.
 
 ## 8. Open questions
 
-- Q1: Does `user/login` with email and password still work, or is it blocked by a captcha? To validate in a proof of concept. If it is blocked, `login --token` becomes the main path.
-- Q2: Does any in-scope endpoint require a request signature (`app_secret`)? Purchases are the most likely candidate.
-- Q3: Which endpoint reorders playlist tracks, and does it exist? If not, `move_playlist_tracks` is dropped.
+None at this stage.
