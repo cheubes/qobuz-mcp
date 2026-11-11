@@ -64,6 +64,7 @@ mcp = FastMCP(
     mask_error_details=True,
 )
 mcp.tool(catalog.search_catalog, annotations=READ_ONLY)
+mcp.tool(catalog.get_album, annotations=READ_ONLY)
 
 
 def run() -> None:

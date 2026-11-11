@@ -4,11 +4,13 @@ from fastmcp import Context
 from pydantic import Field
 
 from qobuz_mcp.models import (
+    AlbumDetail,
     AlbumSummary,
     ArtistSummary,
     Page,
     PlaylistSummary,
     TrackSummary,
+    album_detail,
     album_summary,
     artist_summary,
     page_fields,
@@ -51,3 +53,19 @@ async def search_catalog(
             return Page[PlaylistSummary](
                 **page_fields(group, playlist_summary, limit=limit, offset=offset)
             )
+
+
+async def get_album(
+    ctx: Context,
+    album_id: Annotated[str, Field(min_length=1, description="Qobuz album ID (a string).")],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> AlbumDetail:
+    """Get an album's details: tracklist, audio quality, artists and roles, label, genre,
+    release date, description, press awards and booklet links.
+
+    The tracklist is paginated with `limit` and `offset`; `tracks.total` tells whether more
+    tracks exist.
+    """
+    payload = await qobuz(ctx).get_album(album_id, limit=limit, offset=offset)
+    return album_detail(payload, limit=limit, offset=offset)

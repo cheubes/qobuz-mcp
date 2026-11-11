@@ -25,6 +25,12 @@ class ArtistRef(BaseModel):
     name: str
 
 
+class ArtistCredit(BaseModel):
+    id: int
+    name: str
+    roles: list[str]
+
+
 class LabelRef(BaseModel):
     id: int
     name: str
@@ -68,6 +74,17 @@ class AlbumSummary(BaseModel):
     streamable: bool | None
 
 
+class Award(BaseModel):
+    name: str
+    publication_name: str | None
+    awarded_at: str | None
+
+
+class Booklet(BaseModel):
+    name: str | None
+    url: str
+
+
 class TrackSummary(BaseModel):
     id: int
     url: str
@@ -81,6 +98,18 @@ class TrackSummary(BaseModel):
     audio_quality: AudioQuality
     parental_warning: bool | None
     streamable: bool | None
+
+
+class AlbumDetail(AlbumSummary):
+    artists: list[ArtistCredit]
+    composer: ArtistRef | None
+    release_type: str | None
+    description: str | None
+    awards: list[Award]
+    booklets: list[Booklet]
+    copyright: str | None
+    upc: str | None
+    tracks: Page[TrackSummary]
 
 
 class ArtistSummary(BaseModel):
@@ -178,6 +207,44 @@ def track_summary(raw: dict[str, Any]) -> TrackSummary:
         audio_quality=_audio_quality(raw),
         parental_warning=raw.get("parental_warning"),
         streamable=raw.get("streamable"),
+    )
+
+
+def album_detail(raw: dict[str, Any], *, limit: int, offset: int) -> AlbumDetail:
+    album = {"id": raw["id"], "title": raw["title"]}
+
+    def album_track(track: dict[str, Any]) -> TrackSummary:
+        return track_summary({"album": album, **track})
+
+    return AlbumDetail(
+        **album_summary(raw).model_dump(),
+        artists=[
+            ArtistCredit(id=artist["id"], name=artist["name"], roles=artist.get("roles") or [])
+            for artist in raw.get("artists") or []
+            if artist.get("id") is not None and artist.get("name") is not None
+        ],
+        composer=_ref(ArtistRef, raw.get("composer")),
+        release_type=raw.get("release_type"),
+        description=raw.get("description"),
+        awards=[
+            Award(
+                name=award["name"],
+                publication_name=award.get("publication_name"),
+                awarded_at=_timestamp(award.get("awarded_at")),
+            )
+            for award in raw.get("awards") or []
+            if award.get("name") is not None
+        ],
+        booklets=[
+            Booklet(name=goodie.get("name"), url=goodie["url"])
+            for goodie in raw.get("goodies") or []
+            if goodie.get("url")
+        ],
+        copyright=raw.get("copyright"),
+        upc=raw.get("upc"),
+        tracks=Page[TrackSummary](
+            **page_fields(raw.get("tracks"), album_track, limit=limit, offset=offset)
+        ),
     )
 
 

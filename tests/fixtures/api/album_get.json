@@ -1,0 +1,53 @@
+{
+  "id": "0000000000001",
+  "title": "First Synthetic Album",
+  "version": null,
+  "artist": {"id": 11, "name": "Synthetic Artist"},
+  "artists": [
+    {"id": 11, "name": "Synthetic Artist", "roles": ["main-artist"]},
+    {"id": 12, "name": "Synthetic Pianist", "roles": ["featured-artist", "piano"]}
+  ],
+  "composer": {"id": 13, "name": "Synthetic Composer"},
+  "release_date_original": "1959-08-17",
+  "release_type": "album",
+  "tracks_count": 3,
+  "duration": 2760,
+  "genre": {"id": 80, "name": "Jazz"},
+  "label": {"id": 21, "name": "Synthetic Label"},
+  "maximum_bit_depth": 24,
+  "maximum_sampling_rate": 192,
+  "maximum_channel_count": 2,
+  "hires": true,
+  "parental_warning": false,
+  "streamable": true,
+  "description": "<p>A synthetic description.</p>",
+  "copyright": "1959 Synthetic Records",
+  "upc": "0000000000001",
+  "awards": [
+    {"name": "Synthetic Award", "publication_name": "Synthetic Magazine", "awarded_at": 1700000000}
+  ],
+  "goodies": [
+    {"id": 1, "file_format_id": 21, "name": "Digital booklet", "url": "https://example.invalid/booklet.pdf"}
+  ],
+  "tracks": {
+    "limit": 2,
+    "offset": 0,
+    "total": 3,
+    "items": [
+      {
+        "id": 101, "title": "Synthetic Track", "version": null,
+        "performer": {"id": 11, "name": "Synthetic Artist"},
+        "track_number": 1, "media_number": 1, "duration": 545,
+        "maximum_bit_depth": 24, "maximum_sampling_rate": 192, "maximum_channel_count": 2,
+        "hires": true, "parental_warning": false, "streamable": true
+      },
+      {
+        "id": 102, "title": "Second Synthetic Track", "version": "Take 2",
+        "performer": {"id": 11, "name": "Synthetic Artist"},
+        "track_number": 2, "media_number": 1, "duration": 600,
+        "maximum_bit_depth": 24, "maximum_sampling_rate": 96, "maximum_channel_count": 2,
+        "hires": true, "parental_warning": false, "streamable": true
+      }
+    ]
+  }
+}
