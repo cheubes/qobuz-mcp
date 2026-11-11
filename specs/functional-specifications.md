@@ -179,7 +179,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-SETUP-15** [test] Given Qobuz rejects the authorization code, when `login` exchanges it, then the command exits with a non-zero status and nothing is stored.
 - **AC-SETUP-16** [test] The callback server listens on `127.0.0.1` only, and is closed when `login` ends.
 - **AC-SETUP-17** [test] Given the OAuth private key cannot be extracted, when the user runs `login`, then the command fails with a message suggesting `login --token`.
-- **AC-SETUP-18** [manual] Given a real Qobuz account, when the user runs `login` and signs in in the browser, then the token is stored and a tool call succeeds.
+- **AC-SETUP-18** [manual] Given a real Qobuz account, when the user runs `login` and signs in in the browser, then the token is stored and `login` reports the account's display name, which it reads with the new token.
 
 ### Cross-cutting behaviors
 

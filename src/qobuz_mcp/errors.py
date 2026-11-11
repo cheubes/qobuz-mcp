@@ -1,0 +1,37 @@
+class QobuzError(Exception):
+    """Base class of the errors reported to the user. Messages never contain secrets."""
+
+
+class WebPlayerError(QobuzError):
+    """The Qobuz web player page or bundle could not be loaded."""
+
+
+class AppIdExtractionError(QobuzError):
+    def __init__(self, reason: str) -> None:
+        super().__init__(
+            f"Could not find the app_id in the Qobuz web player ({reason}). "
+            "Set the QOBUZ_APP_ID environment variable to work around it."
+        )
+
+
+class PrivateKeyExtractionError(QobuzError):
+    def __init__(self, reason: str) -> None:
+        super().__init__(
+            f"Could not find the OAuth private key in the Qobuz web player ({reason}). "
+            "Run `qobuz-mcp login --token` to log in with a token copied from the web player."
+        )
+
+
+class LoginTimeoutError(QobuzError):
+    def __init__(self, timeout_seconds: float) -> None:
+        super().__init__(
+            f"No sign-in completed within {timeout_seconds:g} seconds. Run `qobuz-mcp login` again."
+        )
+
+
+class AuthenticationError(QobuzError):
+    """Qobuz rejected the credentials."""
+
+
+class QobuzApiError(QobuzError):
+    """Qobuz answered with an unexpected status or payload."""

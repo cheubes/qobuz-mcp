@@ -32,7 +32,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   The publication version of `README.md`, `codeql.yml`, `CONTRIBUTING.md`, `SECURITY.md`, issue and pull request templates, repository settings, switch to public (technical specifications, "Publication").
   Delivers: none.
   Done when: the repository is public with every setting applied.
-- [ ] **6. Credentials, web player values, OAuth `login`, `login --token` and `logout`**
+- [x] **6. Credentials, web player values, OAuth `login`, `login --token` and `logout`**
   Includes the live test harness and its write guard.
   Delivers: AC-SETUP-03, AC-SETUP-04, AC-SETUP-05, AC-SETUP-07, AC-SETUP-10, AC-SETUP-12, AC-SETUP-13, AC-SETUP-14, AC-SETUP-15, AC-SETUP-16, AC-SETUP-17, AC-SETUP-18, AC-LIVE-01, AC-LIVE-05, AC-LIVE-06.
   Done when: the criteria are covered, all checks pass, and AC-SETUP-18 has been checked by hand.

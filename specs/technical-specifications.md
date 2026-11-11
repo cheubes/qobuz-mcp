@@ -69,11 +69,14 @@ src/qobuz_mcp/
 tests/
     __init__.py
     conftest.py
+    fakes.py             # test doubles: web player, Qobuz API, browser
     memory_keyring.py    # in-memory keyring backend
     fixtures/            # synthetic API payloads and web player snippets
     unit/
         __init__.py
     live/
+        __init__.py
+        conftest.py      # guarded live HTTP client (AC-LIVE-05)
 ```
 
 ## 3. Project configuration
@@ -126,7 +129,7 @@ The CLI reads two values from the web player bundle. The login page needs no spe
    - `app_id`: `production:\{api:\{appId:"(\d{9})"`, which matches the production configuration only;
    - OAuth private key: `authenticate\(\{privateKey:"([^"]+)"`.
 
-The patterns were confirmed during the proof of concept on bundle `8.3.0-b029` and are covered by live tests (AC-LIVE-01, AC-LIVE-06). An `app_id` extraction failure raises `AppIdExtractionError`, whose message suggests setting `QOBUZ_APP_ID`. A private key extraction failure raises `PrivateKeyExtractionError`, whose message suggests `login --token`. The bundle also holds an `appSecret`, which the server does not need: no in-scope endpoint requires a request signature.
+The patterns were confirmed during the proof of concept on bundle `8.3.0-b029` and are covered by live tests (AC-LIVE-01, AC-LIVE-06). An `app_id` extraction failure raises `AppIdExtractionError`, whose message suggests setting `QOBUZ_APP_ID`. A private key extraction failure raises `PrivateKeyExtractionError`, whose message suggests `login --token`. When the page or the bundle cannot be loaded at all, `WebPlayerError` is reported as whichever of these two errors `login` still needs: with `QOBUZ_APP_ID` set, only the private key is missing. `login --token` with `QOBUZ_APP_ID` set does not load the web player at all. The bundle also holds an `appSecret`, which the server does not need: no in-scope endpoint requires a request signature.
 
 ### OAuth browser flow
 
@@ -134,9 +137,10 @@ The patterns were confirmed during the proof of concept on bundle `8.3.0-b029` a
 2. Open `https://www.qobuz.com/signin/oauth?ext_app_id=<app_id>&redirect_url=<callback URL>` with `webbrowser`, and print it.
 3. Qobuz redirects the browser to `<callback URL>?code_autorisation=<code>`. The server answers with a short page telling the user to close the tab, then stops.
 4. `GET oauth/callback?code=<code>&private_key=<private key>` with `X-App-Id`. The response holds `token` and `user_id`, and only `token` is kept.
-5. Store the credentials (section 5).
+5. Call `user/get` with the token, which validates it and gives the display name `login` prints.
+6. Store the credentials (section 5).
 
-Timeout: 5 minutes, after which the server stops and nothing is stored. Qobuz accepted a `127.0.0.1` redirect during the proof of concept. The random path segment keeps a stray or forged request from being taken for the callback, since the flow has no `state` parameter.
+Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised and nothing is stored. The server never logs requests: the default request log line would contain the authorization code. Qobuz accepted a `127.0.0.1` redirect during the proof of concept. The random path segment keeps a stray or forged request from being taken for the callback, since the flow has no `state` parameter.
 
 ## 7. Qobuz API client
 
