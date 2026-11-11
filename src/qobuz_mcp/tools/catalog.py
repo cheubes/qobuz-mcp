@@ -8,6 +8,7 @@ from qobuz_mcp.models import (
     AlbumSummary,
     ArtistDetail,
     ArtistSummary,
+    LabelDetail,
     Page,
     PlaylistDetail,
     PlaylistSummary,
@@ -17,6 +18,7 @@ from qobuz_mcp.models import (
     album_summary,
     artist_detail,
     artist_summary,
+    label_detail,
     page_fields,
     playlist_detail,
     playlist_summary,
@@ -136,3 +138,18 @@ async def get_similar_artists(
     return Page[ArtistSummary](
         **page_fields(payload.get("artists"), artist_summary, limit=limit, offset=offset)
     )
+
+
+async def get_label(
+    ctx: Context,
+    label_id: Annotated[int, Field(ge=1, description="Qobuz label ID (an integer).")],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> LabelDetail:
+    """Get a record label's description and its albums.
+
+    The albums are paginated with `limit` and `offset`; `albums.total` tells whether more
+    albums exist.
+    """
+    payload = await qobuz(ctx).get_label(label_id, limit=limit, offset=offset)
+    return label_detail(payload, limit=limit, offset=offset)
