@@ -134,6 +134,14 @@ class ArtistDetail(ArtistSummary):
     albums: Page[AlbumSummary]
 
 
+class LabelDetail(BaseModel):
+    id: int
+    url: str
+    name: str
+    description: str | None
+    albums: Page[AlbumSummary]
+
+
 class PlaylistSummary(BaseModel):
     id: int
     url: str
@@ -324,6 +332,18 @@ def artist_detail(
         **artist_summary(raw).model_dump(),
         biography_summary=biography.get("summary"),
         biography=biography.get("content") if full_biography else None,
+        albums=Page[AlbumSummary](
+            **page_fields(raw.get("albums"), album_summary, limit=limit, offset=offset)
+        ),
+    )
+
+
+def label_detail(raw: dict[str, Any], *, limit: int, offset: int) -> LabelDetail:
+    return LabelDetail(
+        id=raw["id"],
+        url=public_url("label", raw["id"]),
+        name=raw["name"],
+        description=raw.get("description"),
         albums=Page[AlbumSummary](
             **page_fields(raw.get("albums"), album_summary, limit=limit, offset=offset)
         ),
