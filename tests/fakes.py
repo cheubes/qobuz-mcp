@@ -24,6 +24,15 @@ ALBUM = json.loads((FIXTURES / "api" / "album_get.json").read_text())
 TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_get.json").read_text())
+SIMILAR_ARTISTS = {
+    "limit": 2,
+    "offset": 0,
+    "total": 2,
+    "items": [
+        {"id": 12, "name": "Synthetic Pianist", "albums_count": 7, "slug": "synthetic-pianist"},
+        {"id": 13, "name": "Synthetic Composer", "albums_count": 3},
+    ],
+}
 
 
 @dataclass
@@ -87,6 +96,10 @@ class FakeQobuz:
             if request.url.params["artist_id"] != str(ARTIST["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=ARTIST)
+        if endpoint == "artist/getSimilarArtists":
+            if request.url.params["artist_id"] != str(ARTIST["id"]):
+                return httpx2.Response(404, json={"status": "error", "code": 404})
+            return httpx2.Response(200, json={"artists": SIMILAR_ARTISTS})
         return httpx2.Response(404)
 
     def api_requests(self, endpoint: str) -> list[httpx2.Request]:
