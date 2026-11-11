@@ -1,0 +1,50 @@
+name: Bug report
+description: Something does not work as the specifications describe.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Never paste a Qobuz token, an authorization code, a password, or any data from your
+        Qobuz account (playlist names, favorites, email) in this issue.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: 0.1.0, or a commit SHA
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 27.0
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: MCP client and version
+      placeholder: Claude Desktop 1.2.3, Claude Code 2.3.4
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: The command you ran, or what you asked the assistant, and which tool it called.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Error messages and logs, with any token or account data removed.
+    validations:
+      required: true

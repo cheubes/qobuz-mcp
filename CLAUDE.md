@@ -59,7 +59,9 @@ The credentials in the Keychain belong to the user's real Qobuz account, and the
 - **Check all files in `specs/`** for consistency, not only those touched by the commit.
 - **If one or more specifications need adjusting** (to stay consistent with each other or with the change), block the commit: propose the updates and wait for approval before applying them, then commit.
 - **Update `specs/implementation-plan.md`**: check a step only when its exit condition holds.
-- **Update `README.md`** if needed.
+- **Check `README.md` at every commit**: its status matches the implementation plan, its scope matches the functional specifications, and its disclaimers match "Publication" in the technical specifications.
+- **Check the other documents when the commit touches what they restate**: `CONTRIBUTING.md` and this file when commands or the contribution process change, `SECURITY.md` when credential handling or writes change, `.github/` templates when the contribution process changes.
+- **When one of these documents restates the specifications, the specifications win**: fix the document. If the gap reveals an error in the specifications, follow the usual process to change them instead.
 
 ## Conventions
 

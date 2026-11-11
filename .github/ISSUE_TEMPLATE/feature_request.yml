@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a new capability or a change of behavior.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        The project is specification-driven: a change starts as a specification update.
+        Playback control and audio downloads are out of scope (see the functional specifications).
+  - type: textarea
+    id: need
+    attributes:
+      label: Need
+      description: What you want to do with your assistant and Qobuz, and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+      description: The tool or behavior you have in mind, from the assistant's point of view.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Impact on the functional scope
+      description: Which part of specs/functional-specifications.md this adds to or changes.
+    validations:
+      required: false
