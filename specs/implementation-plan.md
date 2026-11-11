@@ -28,7 +28,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `ci.yml`, `dependabot.yml`, `scripts/check_traceability.py`, with `scripts/` added to mypy's `files`.
   Delivers: none.
   Done when: every required job passes on `main`.
-- [ ] **5. Publication**
+- [x] **5. Publication**
   The publication version of `README.md`, `codeql.yml`, `CONTRIBUTING.md`, `SECURITY.md`, issue and pull request templates, repository settings, switch to public (technical specifications, "Publication").
   Delivers: none.
   Done when: the repository is public with every setting applied.
