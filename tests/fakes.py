@@ -17,6 +17,8 @@ FAKE_APP_ID = "123456789"
 FAKE_PRIVATE_KEY = "fakePrivateKey"
 FAKE_CODE = "fake-authorization-code"
 FAKE_TOKEN = "fake-user-auth-token"
+SEARCH_RESULTS = json.loads((FIXTURES / "api" / "catalog_search.json").read_text())
+SEARCH_TYPES = ("albums", "artists", "tracks", "playlists")
 
 
 @dataclass
@@ -28,6 +30,7 @@ class FakeQobuz:
     web_player_status: int = 200
     oauth_status: int = 200
     valid_tokens: set[str] = field(default_factory=lambda: {FAKE_TOKEN})
+    api_responses: dict[str, httpx2.Response] = field(default_factory=dict)
     requests: list[httpx2.Request] = field(default_factory=list)
 
     def handle(self, request: httpx2.Request) -> httpx2.Response:
@@ -38,6 +41,9 @@ class FakeQobuz:
                 return httpx2.Response(self.web_player_status)
             body = self.login_page if path == "/login" else self.bundle
             return httpx2.Response(200, text=body)
+        endpoint = path.removeprefix("/api.json/0.2/")
+        if endpoint in self.api_responses:
+            return self.api_responses[endpoint]
         if path.endswith("/oauth/callback"):
             params = request.url.params
             valid = (
@@ -50,7 +56,19 @@ class FakeQobuz:
             if request.headers.get("X-User-Auth-Token") not in self.valid_tokens:
                 return httpx2.Response(401, json={"status": "error", "code": 401})
             return httpx2.Response(200, json={"id": 42, "display_name": "Test User"})
+        if request.headers.get("X-User-Auth-Token") not in self.valid_tokens:
+            return httpx2.Response(401, json={"status": "error", "code": 401})
+        if endpoint == "catalog/search":
+            kind = request.url.params["type"]
+            payload = {
+                group: SEARCH_RESULTS[group] if group == kind else {"total": 0, "items": []}
+                for group in SEARCH_TYPES
+            }
+            return httpx2.Response(200, json=payload)
         return httpx2.Response(404)
+
+    def api_requests(self, endpoint: str) -> list[httpx2.Request]:
+        return [r for r in self.requests if r.url.path.endswith("/" + endpoint)]
 
     def client(self) -> httpx2.AsyncClient:
         return httpx2.AsyncClient(transport=httpx2.MockTransport(self.handle))

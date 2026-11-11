@@ -63,6 +63,7 @@ src/qobuz_mcp/
     server.py            # FastMCP instance, lifespan, tool registration
     tools/
         __init__.py
+        common.py        # client built from fresh credentials, pagination parameters
         catalog.py       # FS 5.1
         library.py       # FS 5.2 and favorites writes
         playlists.py     # playlist writes
@@ -203,7 +204,11 @@ All endpoints below were called successfully during the proof of concept.
 
 ## 9. MCP server
 
-- Transport: stdio only.
+- Transport: stdio only. `serve` starts it without FastMCP's banner.
+- One `httpx2.AsyncClient`, created by the FastMCP lifespan, is shared by all tool calls. FastMCP runs one lifespan while any session is open.
+- Tools build a `QobuzClient` from credentials read at each call (`tools/common.py`, section 5).
+- Error conversion: FastMCP wraps every exception raised in a tool into a `ToolError`, keeping the original in `__cause__`. A middleware in `server.py` replaces it with a `ToolError` carrying the `QobuzError` message. `mask_error_details=True` hides the details of any other exception, so an unexpected error never leaks internal data.
+- A result typed as a union of models, such as `search_catalog`'s, is wrapped by FastMCP in a `result` object.
 - Each tool is an async function with typed parameters and a pydantic return type. FastMCP derives the input schema, the output schema and structured content from them.
 - Annotations follow FS section 5. All tools also set `openWorldHint: true`.
 - Pagination follows FS-BEH-1; `offset` defaults to 0. List results use a generic `Page[T]` model: `items`, `total`, `limit`, `offset`.
