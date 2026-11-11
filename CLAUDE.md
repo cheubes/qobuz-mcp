@@ -63,6 +63,16 @@ The credentials in the Keychain belong to the user's real Qobuz account, and the
 - **Check the other documents when the commit touches what they restate**: `CONTRIBUTING.md` and this file when commands or the contribution process change, `SECURITY.md` when credential handling or writes change, `.github/` templates when the contribution process changes.
 - **When one of these documents restates the specifications, the specifications win**: fix the document. If the gap reveals an error in the specifications, follow the usual process to change them instead.
 
+## Pull requests
+
+Changes reach `main` through pull requests (ADR-0030).
+
+- **One branch per plan step or self-contained change.** The pull request title follows Conventional Commits: it becomes the squash commit message.
+- **The pull request body** gives the context, the notable changes, the acceptance criteria delivered and a test plan.
+- **Wait for CI and CodeQL to pass**, then give the maintainer the link and a short summary.
+- **Merge only after the maintainer's explicit approval of that pull request**, with `gh pr merge --squash`. Approval of one pull request never extends to the next.
+- **The admin bypass of the `main` ruleset** is for emergencies only, each time with the maintainer's explicit approval.
+
 ## Conventions
 
 - Everything is in English: code, specifications, `README.md`, this file.
