@@ -24,7 +24,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `pyproject.toml` (build backend, dependency groups, uv, ruff, mypy, coverage and pytest configuration), `.python-version`, CLI skeleton with its tests, in-memory `keyring` backend for tests.
   Delivers: none.
   Done when: all local checks pass, including the coverage threshold.
-- [ ] **4. Continuous integration**
+- [x] **4. Continuous integration**
   `ci.yml`, `dependabot.yml`, `scripts/check_traceability.py`, with `scripts/` added to mypy's `files`.
   Delivers: none.
   Done when: every required job passes on `main`.
