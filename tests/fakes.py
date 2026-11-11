@@ -7,6 +7,7 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import httpx2
 
@@ -20,6 +21,7 @@ FAKE_TOKEN = "fake-user-auth-token"
 SEARCH_RESULTS = json.loads((FIXTURES / "api" / "catalog_search.json").read_text())
 SEARCH_TYPES = ("albums", "artists", "tracks", "playlists")
 ALBUM = json.loads((FIXTURES / "api" / "album_get.json").read_text())
+TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 
 
 @dataclass
@@ -32,6 +34,7 @@ class FakeQobuz:
     oauth_status: int = 200
     valid_tokens: set[str] = field(default_factory=lambda: {FAKE_TOKEN})
     api_responses: dict[str, httpx2.Response] = field(default_factory=dict)
+    track: dict[str, Any] = field(default_factory=lambda: dict(TRACK))
     requests: list[httpx2.Request] = field(default_factory=list)
 
     def handle(self, request: httpx2.Request) -> httpx2.Response:
@@ -70,6 +73,10 @@ class FakeQobuz:
             if request.url.params["album_id"] != ALBUM["id"]:
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=ALBUM)
+        if endpoint == "track/get":
+            if request.url.params["track_id"] != str(TRACK["id"]):
+                return httpx2.Response(404, json={"status": "error", "code": 404})
+            return httpx2.Response(200, json=self.track)
         return httpx2.Response(404)
 
     def api_requests(self, endpoint: str) -> list[httpx2.Request]:

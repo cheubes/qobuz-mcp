@@ -9,12 +9,14 @@ from qobuz_mcp.models import (
     ArtistSummary,
     Page,
     PlaylistSummary,
+    TrackDetail,
     TrackSummary,
     album_detail,
     album_summary,
     artist_summary,
     page_fields,
     playlist_summary,
+    track_detail,
     track_summary,
 )
 from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
@@ -69,3 +71,15 @@ async def get_album(
     """
     payload = await qobuz(ctx).get_album(album_id, limit=limit, offset=offset)
     return album_detail(payload, limit=limit, offset=offset)
+
+
+async def get_track(
+    ctx: Context,
+    track_id: Annotated[int, Field(ge=1, description="Qobuz track ID (an integer).")],
+) -> TrackDetail:
+    """Get a track's details: main performer, credits, composer, work, album, audio quality,
+    ISRC and release date.
+
+    `credits` is Qobuz's own text listing every contributor with their roles.
+    """
+    return track_detail(await qobuz(ctx).get_track(track_id))
