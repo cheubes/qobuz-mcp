@@ -489,3 +489,30 @@ async def search_stories(
     return Page[StorySummary](
         **page_fields(payload.get("stories"), story_summary, limit=limit, offset=offset)
     )
+
+
+async def list_related_stories(
+    ctx: Context,
+    entity_type: Annotated[
+        Literal["album", "artist", "label", "playlist", "award"],
+        Field(description="What the stories are about."),
+    ],
+    entity_id: Annotated[
+        str,
+        Field(
+            min_length=1,
+            description="Qobuz ID of that item: an album ID, or another ID in digits.",
+        ),
+    ],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[StorySummary]:
+    """List Qobuz magazine stories about an album, an artist, a label, a playlist or an award.
+
+    Each story comes with its title, summary, authors, date and sections, and a link to read
+    it on Qobuz. The full text is not available.
+    """
+    payload = await qobuz(ctx).list_related_stories(
+        entity_type, entity_id, limit=limit, offset=offset
+    )
+    return Page[StorySummary](**page_fields(payload, story_summary, limit=limit, offset=offset))

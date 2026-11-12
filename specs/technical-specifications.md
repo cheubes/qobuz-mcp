@@ -196,7 +196,7 @@ All endpoints below were called successfully during the proof of concept, or dur
 | `list_awards` | `award/explore` | `limit`, `offset`, has_more. Items carry `id`, `name` and `magazine.name` |
 | `get_award` | `award/page`, then `award/getAlbums` | `award/page`: `award_id`. It gives the name. `award/getAlbums`: `award_id`, `genre_ids` (optional), `limit`, `offset`, has_more, current format |
 | `search_stories` | `story/search` | `query`, `limit`, `offset`. The page is under `stories`, with a `total` |
-| `list_related_stories` | `album/story`, `artist/story`, `label/story`, `playlist/story` or `award/story`, by `entity_type` | `album_id`, `artist_id`, `label_id`, `playlist_id` or `award_id`, `limit`, `offset`, has_more. `playlist/story` is assumed to match the others: not observed |
+| `list_related_stories` | `album/story`, `artist/story`, `label/story`, `playlist/story` or `award/story`, by `entity_type` | `album_id`, `artist_id`, `label_id`, `playlist_id` or `award_id`, `limit`, `offset`, has_more |
 | `list_favorites` | `favorite/getUserFavorites` | `type` (`albums`, `artists`, `tracks`), `limit`, `offset` |
 | `list_my_playlists` | `playlist/getUserPlaylists` | `filter` (`owner` or `subscriber`, mapped from `owned` and `followed`; omitted for both), `limit`, `offset` |
 | `list_purchases` | `purchase/getUserPurchases` | `type` (`albums`, `tracks`), `limit`, `offset`. No signature needed |

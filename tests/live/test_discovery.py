@@ -92,3 +92,25 @@ async def test_search_stories(live_client: Client[Any]) -> None:
     story = page["items"][0]
     assert story["url"] == f"https://play.qobuz.com/story/{story['id']}"
     assert story["title"]
+
+
+async def test_list_related_stories(live_client: Client[Any]) -> None:
+    """AC-LIVE-09"""
+    album = await first_album(live_client)
+    awards = await live_client.call_tool("list_awards", {"limit": 1})
+    playlists = await live_client.call_tool("list_featured_playlists", {"limit": 1})
+    entities = {
+        "album": album["id"],
+        "artist": str(album["artist"]["id"]),
+        "label": str(album["label"]["id"]),
+        "award": str(awards.structured_content["items"][0]["id"]),  # type: ignore[index]
+        "playlist": str(playlists.structured_content["items"][0]["id"]),  # type: ignore[index]
+    }
+    for entity_type, entity_id in entities.items():
+        result = await live_client.call_tool(
+            "list_related_stories",
+            {"entity_type": entity_type, "entity_id": entity_id, "limit": 2},
+        )
+        page = result.structured_content
+        assert page is not None, entity_type
+        assert isinstance(page["has_more"], bool), entity_type

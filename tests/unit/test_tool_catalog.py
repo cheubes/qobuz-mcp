@@ -29,9 +29,9 @@ def specified_tools() -> dict[str, str]:
     return tools
 
 
-def test_the_specification_lists_31_tools() -> None:
+def test_the_specification_lists_32_tools() -> None:
     tools = specified_tools()
-    assert len(tools) == 31
+    assert len(tools) == 32
     assert set(tools.values()) == set(EXPECTED_HINTS)
 
 
