@@ -34,3 +34,15 @@ async def test_get_radio(live_client: Client[Any]) -> None:
         assert page is not None
         assert page["items"]
         assert page["items"][0]["url"].startswith("https://open.qobuz.com/track/")
+
+
+async def test_list_artist_playlists(live_client: Client[Any]) -> None:
+    """AC-LIVE-09"""
+    album = await first_album(live_client)
+    result = await live_client.call_tool(
+        "list_artist_playlists", {"artist_id": album["artist"]["id"], "limit": 3}
+    )
+    page = result.structured_content
+    assert page is not None
+    assert isinstance(page["has_more"], bool)
+    assert all(item["url"].startswith("https://open.qobuz.com/playlist/") for item in page["items"])

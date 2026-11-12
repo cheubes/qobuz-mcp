@@ -385,3 +385,19 @@ async def suggest_tracks(
             tracks.get("items") if isinstance(tracks, dict) else None, track_summary
         )
     )
+
+
+async def list_artist_playlists(
+    ctx: Context,
+    artist_id: Annotated[int, Field(ge=1, description="Qobuz artist ID (an integer).")],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[PlaylistSummary]:
+    """List Qobuz's editorial playlists featuring an artist.
+
+    Use `get_playlist` to see a playlist's tracks.
+    """
+    payload = await qobuz(ctx).list_artist_playlists(artist_id, limit=limit, offset=offset)
+    return Page[PlaylistSummary](
+        **page_fields(payload, current_playlist_summary, limit=limit, offset=offset)
+    )

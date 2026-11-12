@@ -84,7 +84,7 @@ A tool marked `(planned)` after its name is specified but not exposed yet. The p
 | `list_similar_albums` | Albums similar to a given album, as one list of up to 30 | `album_id` |
 | `get_radio` | Tracks of a radio seeded by an album, an artist or a track, as one list of up to 30 | `seed_type` (`album`, `artist` or `track`), `seed_id` |
 | `suggest_tracks` | Tracks to continue a list of tracks, for example to extend a playlist. The given tracks are not suggested | `track_ids` (1 to 10), `limit` |
-| `list_artist_playlists` (planned) | Editorial playlists featuring an artist | `artist_id`, `limit`, `offset` |
+| `list_artist_playlists` | Editorial playlists featuring an artist | `artist_id`, `limit`, `offset` |
 | `list_label_items` (planned) | One section of a label: top artists, upcoming releases, playlists or awarded releases | `label_id`, `section`, `limit`, `offset` |
 | `list_awards` (planned) | Press awards and distinctions, with the publication that grants them | `limit`, `offset` |
 | `get_award` (planned) | Award details and its paginated albums, optionally for one genre | `award_id`, `genre_id` (optional), `limit`, `offset` |
