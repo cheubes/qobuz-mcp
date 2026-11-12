@@ -218,3 +218,19 @@ async def list_featured_albums(
     return Page[AlbumSummary](
         **page_fields(payload.get("albums"), album_summary, limit=limit, offset=offset)
     )
+
+
+async def list_featured_playlists(
+    ctx: Context,
+    genre_id: GenreFilter = None,
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[PlaylistSummary]:
+    """List Qobuz's editorial playlists, optionally for one genre.
+
+    Use `get_playlist` to see a playlist's tracks.
+    """
+    payload = await qobuz(ctx).list_featured_playlists(genre_id, limit=limit, offset=offset)
+    return Page[PlaylistSummary](
+        **page_fields(payload.get("playlists"), playlist_summary, limit=limit, offset=offset)
+    )
