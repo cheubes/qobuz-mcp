@@ -1,0 +1,16 @@
+{
+  "has_more": true,
+  "items": [
+    {
+      "id": 202,
+      "name": "Synthetic Editorial Playlist",
+      "owner": {"id": 2, "name": "Synthetic Editor"},
+      "image": {"rectangle": "https://static.example/rectangle.jpg", "covers": []},
+      "description": "Synthetic description.",
+      "duration": 5400,
+      "tracks_count": 18,
+      "genres": [{"id": 112, "name": "Jazz", "path": [112]}],
+      "tags": [{"id": 51, "slug": "hi-res", "name": "Hi-Res"}]
+    }
+  ]
+}

@@ -23,7 +23,7 @@ READ_ONLY_ENDPOINTS = frozenset(
         "playlist/get",
         "genre/list",
         "album/getFeatured",
-        "playlist/getFeatured",
+        "discover/playlists",
         "favorite/getUserFavorites",
         "playlist/getUserPlaylists",
         "purchase/getUserPurchases",
