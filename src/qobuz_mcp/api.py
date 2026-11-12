@@ -185,6 +185,13 @@ class QobuzClient:
             },
         )
 
+    async def add_tracks_to_playlist(
+        self, playlist_id: int, track_ids: list[int]
+    ) -> dict[str, Any]:
+        return await self.post(
+            "playlist/addTracks", {"playlist_id": playlist_id, "track_ids": track_ids}
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
