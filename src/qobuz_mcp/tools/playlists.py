@@ -87,3 +87,27 @@ async def remove_tracks_from_playlist(
     """
     payload = await qobuz(ctx).remove_tracks_from_playlist(playlist_id, playlist_track_ids)
     return playlist_summary(payload)
+
+
+async def move_playlist_tracks(
+    ctx: Context,
+    playlist_id: PlaylistId,
+    playlist_track_ids: PlaylistTrackIds,
+    insert_before: Annotated[
+        int,
+        Field(
+            ge=0,
+            description=(
+                "1-based position of the entry to move them in front of; 0 moves them first, "
+                "`tracks_count + 1` moves them last."
+            ),
+        ),
+    ],
+) -> PlaylistSummary:
+    """Reorder entries within a playlist the user owns.
+
+    The entries, identified by `playlist_track_id`, are moved in front of the entry currently
+    at position `insert_before` (positions as returned by `get_playlist`, starting at 1).
+    """
+    payload = await qobuz(ctx).move_playlist_tracks(playlist_id, playlist_track_ids, insert_before)
+    return playlist_summary(payload)
