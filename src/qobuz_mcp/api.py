@@ -290,6 +290,17 @@ class QobuzClient:
     async def list_awards(self, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get("award/explore", {"limit": limit, "offset": offset})
 
+    async def get_award(self, award_id: int) -> dict[str, Any]:
+        return await self.get("award/page", {"award_id": award_id})
+
+    async def list_award_albums(
+        self, award_id: int, genre_id: int | None, *, limit: int, offset: int
+    ) -> dict[str, Any]:
+        return await self.get(
+            "award/getAlbums",
+            {"award_id": award_id, "genre_ids": genre_id, "limit": limit, "offset": offset},
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",

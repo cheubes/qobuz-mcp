@@ -9,6 +9,7 @@ from qobuz_mcp.models import (
     AlbumSummary,
     ArtistDetail,
     ArtistSummary,
+    AwardDetail,
     AwardSummary,
     Genre,
     LabelDetail,
@@ -21,6 +22,7 @@ from qobuz_mcp.models import (
     album_summary,
     artist_detail,
     artist_summary,
+    award_detail,
     award_summary,
     current_album_summary,
     current_artist_summary,
@@ -450,3 +452,21 @@ async def list_awards(
     """
     payload = await qobuz(ctx).list_awards(limit=limit, offset=offset)
     return Page[AwardSummary](**page_fields(payload, award_summary, limit=limit, offset=offset))
+
+
+async def get_award(
+    ctx: Context,
+    award_id: Annotated[int, Field(ge=1, description="Qobuz award ID, from `list_awards`.")],
+    genre_id: GenreFilter = None,
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> AwardDetail:
+    """Get a press award and the albums that received it, optionally for one genre.
+
+    The albums are paginated with `limit` and `offset`; `albums.has_more` tells whether more
+    albums exist.
+    """
+    client = qobuz(ctx)
+    award = await client.get_award(award_id)
+    albums = await client.list_award_albums(award_id, genre_id, limit=limit, offset=offset)
+    return award_detail(award, albums, limit=limit, offset=offset)

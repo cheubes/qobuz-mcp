@@ -1,0 +1,8 @@
+{
+  "id": 6,
+  "name": "Synthetic Award",
+  "image": null,
+  "releases": [{"id": "all", "data": {"has_more": false, "items": []}}],
+  "playlists": {"has_more": false, "items": []},
+  "explore": {"has_more": false, "items": []}
+}

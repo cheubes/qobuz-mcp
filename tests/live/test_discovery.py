@@ -70,3 +70,14 @@ async def test_list_awards(live_client: Client[Any]) -> None:
     assert page["items"]
     award = page["items"][0]
     assert award["url"] == f"https://play.qobuz.com/award/{award['id']}"
+
+
+async def test_get_award(live_client: Client[Any]) -> None:
+    """AC-LIVE-09"""
+    awards = await live_client.call_tool("list_awards", {"limit": 1})
+    award_id = awards.structured_content["items"][0]["id"]  # type: ignore[index]
+    result = await live_client.call_tool("get_award", {"award_id": award_id, "limit": 3})
+    award = result.structured_content
+    assert award is not None
+    assert award["name"]
+    assert isinstance(award["albums"]["has_more"], bool)
