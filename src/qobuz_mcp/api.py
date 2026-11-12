@@ -17,6 +17,13 @@ from qobuz_mcp.errors import (
 API_BASE_URL = "https://www.qobuz.com/api.json/0.2/"
 REQUEST_TIMEOUT_SECONDS = 15.0
 
+LABEL_SECTION_ENDPOINTS = {
+    "top_artists": "label/getTopArtists",
+    "upcoming_releases": "label/getNextReleases",
+    "playlists": "label/getPlaylists",
+    "awarded_releases": "label/getAwardedReleases",
+}
+
 # Featured album categories served by the current web player endpoints (ADR-0035). The other
 # categories stay on album/getFeatured.
 DISCOVER_ALBUM_ENDPOINTS = {
@@ -270,6 +277,14 @@ class QobuzClient:
     ) -> dict[str, Any]:
         return await self.get(
             "artist/playlists", {"artist_id": artist_id, "limit": limit, "offset": offset}
+        )
+
+    async def list_label_items(
+        self, label_id: int, section: str, *, limit: int, offset: int
+    ) -> dict[str, Any]:
+        return await self.get(
+            LABEL_SECTION_ENDPOINTS[section],
+            {"label_id": label_id, "limit": limit, "offset": offset},
         )
 
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:

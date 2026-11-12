@@ -46,3 +46,17 @@ async def test_list_artist_playlists(live_client: Client[Any]) -> None:
     assert page is not None
     assert isinstance(page["has_more"], bool)
     assert all(item["url"].startswith("https://open.qobuz.com/playlist/") for item in page["items"])
+
+
+@pytest.mark.parametrize(
+    "section", ["top_artists", "upcoming_releases", "playlists", "awarded_releases"]
+)
+async def test_list_label_items(live_client: Client[Any], section: str) -> None:
+    """AC-LIVE-09"""
+    album = await first_album(live_client)
+    result = await live_client.call_tool(
+        "list_label_items", {"label_id": album["label"]["id"], "section": section, "limit": 3}
+    )
+    page = result.structured_content["result"]  # type: ignore[index]
+    assert isinstance(page["has_more"], bool)
+    assert all(item["url"].startswith("https://open.qobuz.com/") for item in page["items"])

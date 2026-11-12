@@ -21,6 +21,7 @@ from qobuz_mcp.models import (
     artist_detail,
     artist_summary,
     current_album_summary,
+    current_artist_summary,
     current_playlist_summary,
     current_track_summary,
     fixed_page_fields,
@@ -401,3 +402,38 @@ async def list_artist_playlists(
     return Page[PlaylistSummary](
         **page_fields(payload, current_playlist_summary, limit=limit, offset=offset)
     )
+
+
+async def list_label_items(
+    ctx: Context,
+    label_id: Annotated[int, Field(ge=1, description="Qobuz label ID (an integer).")],
+    section: Annotated[
+        Literal["top_artists", "upcoming_releases", "playlists", "awarded_releases"],
+        Field(
+            description=(
+                "Which part of the label: its top artists, its upcoming releases, its "
+                "editorial playlists, or its releases that received a press award."
+            )
+        ),
+    ],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[ArtistSummary] | Page[AlbumSummary] | Page[PlaylistSummary]:
+    """List one section of a record label: artists, albums or playlists, matching `section`.
+
+    Use `get_label` for the label's description and its whole catalog of albums.
+    """
+    payload = await qobuz(ctx).list_label_items(label_id, section, limit=limit, offset=offset)
+    match section:
+        case "top_artists":
+            return Page[ArtistSummary](
+                **page_fields(payload, current_artist_summary, limit=limit, offset=offset)
+            )
+        case "playlists":
+            return Page[PlaylistSummary](
+                **page_fields(payload, current_playlist_summary, limit=limit, offset=offset)
+            )
+        case _:
+            return Page[AlbumSummary](
+                **page_fields(payload, current_album_summary, limit=limit, offset=offset)
+            )

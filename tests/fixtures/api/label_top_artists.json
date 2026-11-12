@@ -1,0 +1,7 @@
+{
+  "has_more": true,
+  "items": [
+    {"id": 11, "name": "Synthetic Artist", "image": {"hash": "00000000000000000000000000000000", "format": "jpg"}},
+    {"id": 12, "name": "Other Synthetic Artist", "image": null}
+  ]
+}

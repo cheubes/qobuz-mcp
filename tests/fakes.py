@@ -25,12 +25,20 @@ TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_page.json").read_text())
 ARTIST_PLAYLISTS = json.loads((FIXTURES / "api" / "artist_playlists.json").read_text())
+LABEL_TOP_ARTISTS = json.loads((FIXTURES / "api" / "label_top_artists.json").read_text())
+LABEL_PLAYLISTS = json.loads((FIXTURES / "api" / "label_playlists.json").read_text())
 RADIO = json.loads((FIXTURES / "api" / "radio.json").read_text())
 ARTIST_RELEASES = json.loads((FIXTURES / "api" / "artist_releases.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_page.json").read_text())
 LABEL_ALBUMS = json.loads((FIXTURES / "api" / "label_albums.json").read_text())
 FAVORITES = json.loads((FIXTURES / "api" / "favorites.json").read_text())
 DISCOVER_PLAYLISTS = json.loads((FIXTURES / "api" / "discover_playlists.json").read_text())
+LABEL_SECTIONS = {
+    "label/getTopArtists": LABEL_TOP_ARTISTS,
+    "label/getNextReleases": LABEL_ALBUMS,
+    "label/getPlaylists": LABEL_PLAYLISTS,
+    "label/getAwardedReleases": LABEL_ALBUMS,
+}
 # Write endpoints answer with the playlist object or with a status (proof of concept).
 PLAYLIST_WRITE_ENDPOINTS = frozenset(
     {
@@ -168,6 +176,10 @@ class FakeQobuz:
             if request.url.params["artist_id"] != str(ARTIST["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json={"artists": SIMILAR_ARTISTS})
+        if endpoint in LABEL_SECTIONS:
+            if request.url.params["label_id"] != str(LABEL["id"]):
+                return httpx2.Response(404, json={"status": "error", "code": 404})
+            return httpx2.Response(200, json=LABEL_SECTIONS[endpoint])
         if endpoint in ("label/page", "label/getAlbums"):
             if request.url.params["label_id"] != str(LABEL["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
