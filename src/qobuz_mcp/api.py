@@ -88,10 +88,12 @@ class QobuzClient:
             "artist/getSimilarArtists", {"artist_id": artist_id, "limit": limit, "offset": offset}
         )
 
-    async def get_label(self, label_id: int, *, limit: int, offset: int) -> dict[str, Any]:
+    async def get_label(self, label_id: int) -> dict[str, Any]:
+        return await self.get("label/page", {"label_id": label_id})
+
+    async def list_label_albums(self, label_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
-            "label/get",
-            {"label_id": label_id, "extra": "albums", "limit": limit, "offset": offset},
+            "label/getAlbums", {"label_id": label_id, "limit": limit, "offset": offset}
         )
 
     async def list_genres(

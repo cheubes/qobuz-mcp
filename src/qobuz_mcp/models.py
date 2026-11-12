@@ -369,14 +369,17 @@ def artist_detail(
     )
 
 
-def label_detail(raw: dict[str, Any], *, limit: int, offset: int) -> LabelDetail:
+def label_detail(
+    raw: dict[str, Any], albums: dict[str, Any], *, limit: int, offset: int
+) -> LabelDetail:
+    """A label from `label/page`, with its albums from `label/getAlbums` (ADR-0034)."""
     return LabelDetail(
         id=raw["id"],
         url=public_url("label", raw["id"]),
         name=raw["name"],
         description=raw.get("description"),
         albums=Page[AlbumSummary](
-            **page_fields(raw.get("albums"), album_summary, limit=limit, offset=offset)
+            **page_fields(albums, current_album_summary, limit=limit, offset=offset)
         ),
     )
 

@@ -194,8 +194,10 @@ async def get_label(
     The albums are paginated with `limit` and `offset`; `albums.has_more` tells whether more
     albums exist.
     """
-    payload = await qobuz(ctx).get_label(label_id, limit=limit, offset=offset)
-    return label_detail(payload, limit=limit, offset=offset)
+    client = qobuz(ctx)
+    label = await client.get_label(label_id)
+    albums = await client.list_label_albums(label_id, limit=limit, offset=offset)
+    return label_detail(label, albums, limit=limit, offset=offset)
 
 
 async def list_genres(
