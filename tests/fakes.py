@@ -25,6 +25,7 @@ TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_get.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_get.json").read_text())
+FAVORITES = json.loads((FIXTURES / "api" / "favorites.json").read_text())
 GENRES: list[dict[str, Any]] = [
     {"id": 112, "name": "Pop/Rock", "path": [112], "slug": "pop-rock", "color": "#000000"},
     {"id": 80, "name": "Jazz", "path": [80], "slug": "jazz", "color": "#000000"},
@@ -115,6 +116,9 @@ class FakeQobuz:
             return httpx2.Response(200, json={"albums": SEARCH_RESULTS["albums"]})
         if endpoint == "playlist/getFeatured":
             return httpx2.Response(200, json={"playlists": SEARCH_RESULTS["playlists"]})
+        if endpoint == "favorite/getUserFavorites":
+            kind = request.url.params["type"]
+            return httpx2.Response(200, json={kind: FAVORITES[kind], "user": {"id": 42}})
         if endpoint == "genre/list":
             parent = request.url.params.get("parent_id")
             items = [
