@@ -29,6 +29,7 @@ LABEL_TOP_ARTISTS = json.loads((FIXTURES / "api" / "label_top_artists.json").rea
 LABEL_PLAYLISTS = json.loads((FIXTURES / "api" / "label_playlists.json").read_text())
 AWARDS = json.loads((FIXTURES / "api" / "award_explore.json").read_text())
 AWARD = json.loads((FIXTURES / "api" / "award_page.json").read_text())
+STORIES = json.loads((FIXTURES / "api" / "story_search.json").read_text())
 RADIO = json.loads((FIXTURES / "api" / "radio.json").read_text())
 ARTIST_RELEASES = json.loads((FIXTURES / "api" / "artist_releases.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_page.json").read_text())
@@ -168,6 +169,8 @@ class FakeQobuz:
             if request.url.params["award_id"] != str(AWARD["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=AWARD if endpoint == "award/page" else LABEL_ALBUMS)
+        if endpoint == "story/search":
+            return httpx2.Response(200, json=STORIES)
         if endpoint == "award/explore":
             return httpx2.Response(200, json=AWARDS)
         if endpoint == "artist/playlists":

@@ -81,3 +81,14 @@ async def test_get_award(live_client: Client[Any]) -> None:
     assert award is not None
     assert award["name"]
     assert isinstance(award["albums"]["has_more"], bool)
+
+
+async def test_search_stories(live_client: Client[Any]) -> None:
+    """AC-LIVE-09"""
+    result = await live_client.call_tool("search_stories", {"query": "jazz", "limit": 3})
+    page = result.structured_content
+    assert page is not None
+    assert page["items"]
+    story = page["items"][0]
+    assert story["url"] == f"https://play.qobuz.com/story/{story['id']}"
+    assert story["title"]

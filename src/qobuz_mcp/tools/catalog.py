@@ -16,6 +16,7 @@ from qobuz_mcp.models import (
     Page,
     PlaylistDetail,
     PlaylistSummary,
+    StorySummary,
     TrackDetail,
     TrackSummary,
     album_detail,
@@ -34,6 +35,7 @@ from qobuz_mcp.models import (
     page_fields,
     playlist_detail,
     playlist_summary,
+    story_summary,
     track_detail,
     track_summary,
 )
@@ -470,3 +472,20 @@ async def get_award(
     award = await client.get_award(award_id)
     albums = await client.list_award_albums(award_id, genre_id, limit=limit, offset=offset)
     return award_detail(award, albums, limit=limit, offset=offset)
+
+
+async def search_stories(
+    ctx: Context,
+    query: Annotated[str, Field(min_length=1, description="Free-text search in the magazine.")],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[StorySummary]:
+    """Search Qobuz magazine stories: news, interviews, reviews.
+
+    Each story comes with its title, summary, authors, date and sections, and a link to read
+    it on Qobuz. The full text is not available.
+    """
+    payload = await qobuz(ctx).search_stories(query, limit=limit, offset=offset)
+    return Page[StorySummary](
+        **page_fields(payload.get("stories"), story_summary, limit=limit, offset=offset)
+    )
