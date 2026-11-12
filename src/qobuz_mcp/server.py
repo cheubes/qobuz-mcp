@@ -70,6 +70,7 @@ mcp.tool(catalog.get_playlist, annotations=READ_ONLY)
 mcp.tool(catalog.get_artist, annotations=READ_ONLY)
 mcp.tool(catalog.get_similar_artists, annotations=READ_ONLY)
 mcp.tool(catalog.get_label, annotations=READ_ONLY)
+mcp.tool(catalog.list_genres, annotations=READ_ONLY)
 
 
 def run() -> None:

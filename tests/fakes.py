@@ -25,6 +25,12 @@ TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_get.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_get.json").read_text())
+GENRES: list[dict[str, Any]] = [
+    {"id": 112, "name": "Pop/Rock", "path": [112], "slug": "pop-rock", "color": "#000000"},
+    {"id": 80, "name": "Jazz", "path": [80], "slug": "jazz", "color": "#000000"},
+    {"id": 117, "name": "Rock", "path": [117, 112], "slug": "rock", "color": "#000000"},
+    {"id": 118, "name": "Indie Rock", "path": [118, 117, 112], "slug": "indie", "color": "#000"},
+]
 SIMILAR_ARTISTS = {
     "limit": 2,
     "offset": 0,
@@ -105,6 +111,15 @@ class FakeQobuz:
             if request.url.params["label_id"] != str(LABEL["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=LABEL)
+        if endpoint == "genre/list":
+            parent = request.url.params.get("parent_id")
+            items = [
+                genre for genre in GENRES if genre["path"][1:2] == ([int(parent)] if parent else [])
+            ]
+            return httpx2.Response(
+                200,
+                json={"genres": {"limit": 25, "offset": 0, "total": len(items), "items": items}},
+            )
         return httpx2.Response(404)
 
     def api_requests(self, endpoint: str) -> list[httpx2.Request]:

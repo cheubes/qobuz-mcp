@@ -185,7 +185,7 @@ All endpoints below were called successfully during the proof of concept.
 | `get_similar_artists` | `artist/getSimilarArtists` | `artist_id`, `limit`, `offset` |
 | `get_label` | `label/get` | `label_id`, `extra=albums`, `limit`, `offset` |
 | `get_playlist` | `playlist/get` | `playlist_id`, `extra=tracks`, `limit`, `offset`. Entries carry `playlist_track_id` and `position` |
-| `list_genres` | `genre/list` | `parent_id` (optional) |
+| `list_genres` | `genre/list` | `parent_id` (optional), `limit`, `offset`. Qobuz's `path` lists the genre itself, then its ancestors up to the root |
 | `list_featured_albums` | `album/getFeatured` | `type`, `genre_ids` (optional), `limit`, `offset`. Accepted `type` values, as listed by the API: `new-releases`, `new-releases-full`, `recent-releases`, `press-awards`, `best-sellers`, `most-streamed`, `editor-picks`, `most-featured`, `ideal-discography`, `qobuzissims`, `harmonia-mundi`, `universal-classic`, `universal-jazz`, `universal-jeunesse`, `universal-chanson` |
 | `list_featured_playlists` | `playlist/getFeatured` | `type=editor-picks` (sent as the web player does, but ignored by the API), `genre_ids` (optional), `limit`, `offset` |
 | `list_favorites` | `favorite/getUserFavorites` | `type` (`albums`, `artists`, `tracks`), `limit`, `offset` |
@@ -261,7 +261,7 @@ Tool results are pydantic models in `models.py`. They are the contract the assis
 | `PlaylistSummary` | search, featured playlists, user playlists, playlist writes | `id: int`, `url`, `name`, `description`, `owner: OwnerRef`, `tracks_count`, `duration_seconds`, `is_public`, `is_collaborative`, `updated_at` |
 | `PlaylistDetail` | `get_playlist` | `PlaylistSummary` fields, plus `genres: list[GenreRef]`, `entries: Page[PlaylistEntry]` |
 | `PlaylistEntry` | `PlaylistDetail` | `playlist_track_id`, `position`, `track: TrackSummary` |
-| `Genre` | `list_genres` | `id`, `name`, `path: list[int]` (IDs of the parent genres) |
+| `Genre` | `list_genres` | `id`, `name`, `path: list[int]` (IDs of the ancestor genres, from the root to the direct parent, empty for a top-level genre) |
 
 ### Tool results
 
