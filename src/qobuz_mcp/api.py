@@ -200,6 +200,18 @@ class QobuzClient:
             {"playlist_id": playlist_id, "playlist_track_ids": playlist_track_ids},
         )
 
+    async def move_playlist_tracks(
+        self, playlist_id: int, playlist_track_ids: list[int], insert_before: int
+    ) -> dict[str, Any]:
+        return await self.post(
+            "playlist/updateTracksPosition",
+            {
+                "playlist_id": playlist_id,
+                "playlist_track_ids": playlist_track_ids,
+                "insert_before": insert_before,
+            },
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
