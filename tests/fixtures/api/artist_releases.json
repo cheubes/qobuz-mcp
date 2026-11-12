@@ -1,0 +1,105 @@
+{
+  "has_more": true,
+  "items": [
+    {
+      "id": "0000000000031",
+      "title": "First Release",
+      "version": null,
+      "tracks_count": 6,
+      "artist": {
+        "id": 11,
+        "name": {
+          "display": "Synthetic Artist"
+        }
+      },
+      "artists": [
+        {
+          "id": 11,
+          "name": "Synthetic Artist",
+          "roles": [
+            "main-artist"
+          ]
+        }
+      ],
+      "label": {
+        "id": 21,
+        "name": "Synthetic Label"
+      },
+      "genre": {
+        "id": 80,
+        "name": "Jazz",
+        "path": [
+          80
+        ]
+      },
+      "release_type": "album",
+      "release_tags": [],
+      "duration": 2500,
+      "dates": {
+        "original": "2001-05-04",
+        "stream": "2010-01-01"
+      },
+      "parental_warning": false,
+      "audio_info": {
+        "maximum_sampling_rate": 44.1,
+        "maximum_bit_depth": 16,
+        "maximum_channel_count": 2
+      },
+      "rights": {
+        "streamable": true,
+        "hires_streamable": false
+      },
+      "awards": []
+    },
+    {
+      "id": "0000000000032",
+      "title": "Second Release",
+      "version": null,
+      "tracks_count": 6,
+      "artist": {
+        "id": 11,
+        "name": {
+          "display": "Synthetic Artist"
+        }
+      },
+      "artists": [
+        {
+          "id": 11,
+          "name": "Synthetic Artist",
+          "roles": [
+            "main-artist"
+          ]
+        }
+      ],
+      "label": {
+        "id": 21,
+        "name": "Synthetic Label"
+      },
+      "genre": {
+        "id": 80,
+        "name": "Jazz",
+        "path": [
+          80
+        ]
+      },
+      "release_type": "live",
+      "release_tags": [],
+      "duration": 2500,
+      "dates": {
+        "original": "2001-05-04",
+        "stream": "2010-01-01"
+      },
+      "parental_warning": false,
+      "audio_info": {
+        "maximum_sampling_rate": 44.1,
+        "maximum_bit_depth": 16,
+        "maximum_channel_count": 2
+      },
+      "rights": {
+        "streamable": true,
+        "hires_streamable": false
+      },
+      "awards": []
+    }
+  ]
+}

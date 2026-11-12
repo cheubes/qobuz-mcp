@@ -53,7 +53,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `Page` gains `has_more` and an optional `total` (ADR-0032), the server instructions point to `has_more`, and `models.py` maps the current web player formats. The AC-BEH-02 and AC-BEH-14 tests from step 8 are extended to `has_more`.
   Delivers: AC-BEH-16.
   Done when: the criterion is covered and all checks pass.
-- [ ] **12. Migrations of existing tools**
+- [x] **12. Migrations of existing tools**
   `list_featured_playlists`, `get_label`, `list_featured_albums` and `get_artist` move to the current web player endpoints (ADR-0033 to ADR-0036), one pull request each. The live test guard allows their new endpoints.
   Delivers: AC-CAT-05, AC-CAT-06, AC-CAT-07, AC-LIVE-07, AC-LIVE-08.
   Done when: the criteria are covered, all checks pass, and no migrated tool calls its former endpoint.
