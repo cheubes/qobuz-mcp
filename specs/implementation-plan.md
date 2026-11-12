@@ -45,7 +45,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
 - [x] **9. Library read tools**
   Delivers: AC-LIB-01, AC-LIB-04, AC-LIB-05, AC-LIVE-04.
   Done when: the criteria are covered and all checks pass.
-- [ ] **10. Write tools**
+- [x] **10. Write tools**
   The AC-BEH-11 tests from step 8 are extended to the AC-BEH-09 error case.
   Delivers: AC-BEH-01, AC-BEH-09, AC-LIB-02, AC-LIB-03, AC-PL-01, AC-PL-02, AC-PL-03, AC-PL-04, AC-PL-05, AC-PL-06, AC-PL-07.
   Done when: the criteria are covered, all checks pass, and the full tool catalog of the functional specifications is exposed.
