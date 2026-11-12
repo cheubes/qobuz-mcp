@@ -55,3 +55,17 @@ async def test_get_label_returns_a_page_of_albums(live_client: Client[Any]) -> N
     assert label["name"]
     assert label["albums"]["items"]
     assert all(album["label"]["id"] == label_id for album in label["albums"]["items"])
+
+
+@pytest.mark.parametrize("category", ["new-releases", "best-sellers"])
+async def test_featured_albums_from_both_endpoint_families(
+    live_client: Client[Any], category: str
+) -> None:
+    """AC-LIVE-07"""
+    result = await live_client.call_tool("list_featured_albums", {"category": category, "limit": 3})
+    page = result.structured_content
+    assert page is not None
+    assert page["items"]
+    album = page["items"][0]
+    assert album["url"] == f"https://open.qobuz.com/album/{album['id']}"
+    assert album["title"]

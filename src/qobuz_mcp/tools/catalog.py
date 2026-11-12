@@ -3,6 +3,7 @@ from typing import Annotated, Literal
 from fastmcp import Context
 from pydantic import Field
 
+from qobuz_mcp.api import DISCOVER_ALBUM_ENDPOINTS
 from qobuz_mcp.models import (
     AlbumDetail,
     AlbumSummary,
@@ -19,6 +20,7 @@ from qobuz_mcp.models import (
     album_summary,
     artist_detail,
     artist_summary,
+    current_album_summary,
     current_playlist_summary,
     genre,
     label_detail,
@@ -32,8 +34,10 @@ from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
 
 SearchType = Literal["albums", "artists", "tracks", "playlists"]
 
-# The values album/getFeatured accepts, as listed by the API itself.
+# The values album/getFeatured accepts, as listed by the API itself, plus album-of-the-week,
+# served by discover/albumOfTheWeek (ADR-0035).
 FeaturedAlbumCategory = Literal[
+    "album-of-the-week",
     "new-releases",
     "new-releases-full",
     "recent-releases",
@@ -225,7 +229,8 @@ async def list_featured_albums(
         Field(
             description=(
                 "Editorial list: new releases, press awards, best sellers, most streamed, "
-                "editor picks, ideal discography, Qobuzissimes, or a label selection."
+                "editor picks, ideal discography, Qobuzissimes, album of the week, or a label "
+                "selection."
             )
         ),
     ],
@@ -235,6 +240,10 @@ async def list_featured_albums(
 ) -> Page[AlbumSummary]:
     """List albums from one of Qobuz's editorial selections, optionally for one genre."""
     payload = await qobuz(ctx).list_featured_albums(category, genre_id, limit=limit, offset=offset)
+    if category in DISCOVER_ALBUM_ENDPOINTS:
+        return Page[AlbumSummary](
+            **page_fields(payload, current_album_summary, limit=limit, offset=offset)
+        )
     return Page[AlbumSummary](
         **page_fields(payload.get("albums"), album_summary, limit=limit, offset=offset)
     )

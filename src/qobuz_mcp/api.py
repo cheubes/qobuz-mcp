@@ -17,6 +17,17 @@ from qobuz_mcp.errors import (
 API_BASE_URL = "https://www.qobuz.com/api.json/0.2/"
 REQUEST_TIMEOUT_SECONDS = 15.0
 
+# Featured album categories served by the current web player endpoints (ADR-0035). The other
+# categories stay on album/getFeatured.
+DISCOVER_ALBUM_ENDPOINTS = {
+    "new-releases": "discover/newReleases",
+    "qobuzissims": "discover/qobuzissims",
+    "ideal-discography": "discover/idealDiscography",
+    "most-streamed": "discover/mostStreamed",
+    "press-awards": "discover/pressAward",
+    "album-of-the-week": "discover/albumOfTheWeek",
+}
+
 type ParamValue = str | int | bool | Sequence[str | int] | None
 
 _APP_ID_MESSAGE = re.compile(r"app[_ ]?id", re.IGNORECASE)
@@ -106,6 +117,11 @@ class QobuzClient:
     async def list_featured_albums(
         self, category: str, genre_id: int | None, *, limit: int, offset: int
     ) -> dict[str, Any]:
+        if category in DISCOVER_ALBUM_ENDPOINTS:
+            return await self.get(
+                DISCOVER_ALBUM_ENDPOINTS[category],
+                {"genre_ids": genre_id, "limit": limit, "offset": offset},
+            )
         return await self.get(
             "album/getFeatured",
             {"type": category, "genre_ids": genre_id, "limit": limit, "offset": offset},
