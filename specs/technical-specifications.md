@@ -332,10 +332,10 @@ The current web player endpoints return albums, tracks and playlists in another 
 
 ## 12. Client configuration
 
-Claude Code:
+Claude Code, in user scope, since the default local scope registers the server for the current directory only:
 
 ```sh
-claude mcp add qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
+claude mcp add --scope user qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
 ```
 
 Claude Desktop (`claude_desktop_config.json`). The absolute path to `uv` is required because Claude Desktop does not inherit the shell `PATH`:

@@ -65,7 +65,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   The `(planned)` tools of FS 5.2, one pull request each, each removing its marker.
   Delivers: AC-LIB-06, AC-LIB-07, AC-LIB-08, AC-LIB-09, AC-LIVE-10.
   Done when: the criteria are covered, all checks pass, and no tool of section 5 is marked `(planned)`.
-- [ ] **15. README usage sections**
+- [x] **15. README usage sections**
   Prerequisites, login, client configuration.
   Delivers: AC-SETUP-11, AC-BEH-15.
   Done when: both manual criteria have been checked by hand with Claude Desktop and Claude Code.
