@@ -41,3 +41,17 @@ async def test_featured_playlists_for_a_tag(live_client: Client[Any]) -> None:
     assert page["items"]
     playlist = page["items"][0]
     assert playlist["url"] == f"https://open.qobuz.com/playlist/{playlist['id']}"
+
+
+async def test_get_label_returns_a_page_of_albums(live_client: Client[Any]) -> None:
+    """AC-LIVE-08"""
+    search = await live_client.call_tool(
+        "search_catalog", {"query": "Miles Davis Kind of Blue", "type": "albums", "limit": 1}
+    )
+    label_id = search.structured_content["result"]["items"][0]["label"]["id"]  # type: ignore[index]
+    result = await live_client.call_tool("get_label", {"label_id": label_id, "limit": 3})
+    label = result.structured_content
+    assert label is not None
+    assert label["name"]
+    assert label["albums"]["items"]
+    assert all(album["label"]["id"] == label_id for album in label["albums"]["items"])

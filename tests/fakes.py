@@ -24,7 +24,8 @@ ALBUM = json.loads((FIXTURES / "api" / "album_get.json").read_text())
 TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_get.json").read_text())
-LABEL = json.loads((FIXTURES / "api" / "label_get.json").read_text())
+LABEL = json.loads((FIXTURES / "api" / "label_page.json").read_text())
+LABEL_ALBUMS = json.loads((FIXTURES / "api" / "label_albums.json").read_text())
 FAVORITES = json.loads((FIXTURES / "api" / "favorites.json").read_text())
 DISCOVER_PLAYLISTS = json.loads((FIXTURES / "api" / "discover_playlists.json").read_text())
 # Write endpoints answer with the playlist object or with a status (proof of concept).
@@ -142,10 +143,10 @@ class FakeQobuz:
             if request.url.params["artist_id"] != str(ARTIST["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json={"artists": SIMILAR_ARTISTS})
-        if endpoint == "label/get":
+        if endpoint in ("label/page", "label/getAlbums"):
             if request.url.params["label_id"] != str(LABEL["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
-            return httpx2.Response(200, json=LABEL)
+            return httpx2.Response(200, json=LABEL if endpoint == "label/page" else LABEL_ALBUMS)
         if endpoint == "album/getFeatured":
             return httpx2.Response(200, json={"albums": SEARCH_RESULTS["albums"]})
         if endpoint == "discover/playlists":

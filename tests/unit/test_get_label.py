@@ -36,21 +36,20 @@ async def test_get_label_returns_description_and_albums(client: Client[Any]) -> 
     )
     assert label["description"] == "A synthetic label description."
     assert [album["id"] for album in label["albums"]["items"]] == [
-        "0000000000001",
-        "0000000000002",
+        "0000000000021",
+        "0000000000022",
     ]
-    assert label["albums"]["total"] == 120
+    assert (label["albums"]["has_more"], label["albums"]["total"]) == (True, None)
+    assert label["albums"]["items"][1]["artist"]["name"] == "Other Synthetic Artist"
 
 
 async def test_label_albums_are_paginated(client: Client[Any], fake_qobuz: FakeQobuz) -> None:
     await client.call_tool("get_label", {"label_id": LABEL["id"], "limit": 10, "offset": 40})
-    request = fake_qobuz.api_requests("label/get")[-1]
-    assert dict(request.url.params) == {
-        "label_id": "21",
-        "extra": "albums",
-        "limit": "10",
-        "offset": "40",
-    }
+    page_request = fake_qobuz.api_requests("label/page")[-1]
+    assert dict(page_request.url.params) == {"label_id": "21"}
+    albums_request = fake_qobuz.api_requests("label/getAlbums")[-1]
+    assert dict(albums_request.url.params) == {"label_id": "21", "limit": "10", "offset": "40"}
+    assert fake_qobuz.api_requests("label/get") == []
 
 
 async def test_unknown_label_error_names_the_id(client: Client[Any]) -> None:

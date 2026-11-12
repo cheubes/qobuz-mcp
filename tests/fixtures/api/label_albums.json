@@ -1,0 +1,35 @@
+{
+  "has_more": true,
+  "items": [
+    {
+      "id": "0000000000021",
+      "title": "First Label Album",
+      "version": null,
+      "track_count": 8,
+      "duration": 2700,
+      "parental_warning": false,
+      "artists": [{"id": 11, "name": "Synthetic Artist", "roles": ["main-artist"]}],
+      "label": {"id": 21, "name": "Synthetic Label"},
+      "genre": {"id": 80, "name": "Jazz", "path": [80]},
+      "dates": {"original": "1959-08-17", "stream": "2010-01-01"},
+      "awards": [],
+      "audio_info": {"maximum_sampling_rate": 44.1, "maximum_bit_depth": 16, "maximum_channel_count": 2},
+      "rights": {"streamable": true, "hires_streamable": false}
+    },
+    {
+      "id": "0000000000022",
+      "title": "Second Label Album",
+      "version": "Remastered",
+      "track_count": 10,
+      "duration": 3100,
+      "parental_warning": false,
+      "artists": [{"id": 12, "name": "Other Synthetic Artist", "roles": ["main-artist"]}],
+      "label": {"id": 21, "name": "Synthetic Label"},
+      "genre": {"id": 80, "name": "Jazz", "path": [80]},
+      "dates": {"original": "1961-03-01", "stream": "2010-01-01"},
+      "awards": [],
+      "audio_info": {"maximum_sampling_rate": 96, "maximum_bit_depth": 24, "maximum_channel_count": 2},
+      "rights": {"streamable": true, "hires_streamable": true}
+    }
+  ]
+}

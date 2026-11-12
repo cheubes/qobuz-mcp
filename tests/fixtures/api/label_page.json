@@ -1,0 +1,12 @@
+{
+  "id": 21,
+  "name": "Synthetic Label",
+  "description": "A synthetic label description.",
+  "image": "https://static.example/label.jpg",
+  "foundation_year": null,
+  "founders": [],
+  "geographic_origin": null,
+  "styles": [],
+  "releases": [{"id": "all", "data": {"has_more": false, "items": []}}],
+  "top_tracks": []
+}
