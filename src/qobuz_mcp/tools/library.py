@@ -8,16 +8,21 @@ from qobuz_mcp.models import (
     ArtistSummary,
     Favorite,
     Page,
+    PlaylistSummary,
     TrackSummary,
     album_summary,
     artist_summary,
     favorited_at,
     page_fields,
+    playlist_summary,
     track_summary,
 )
 from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
 
 FavoriteType = Literal["albums", "artists", "tracks"]
+PlaylistFilter = Literal["owned", "followed"]
+
+_QOBUZ_PLAYLIST_FILTERS: dict[PlaylistFilter, str] = {"owned": "owner", "followed": "subscriber"}
 
 
 async def list_favorites(
@@ -66,3 +71,25 @@ async def list_favorites(
                     offset=offset,
                 )
             )
+
+
+async def list_my_playlists(
+    ctx: Context,
+    filter: Annotated[
+        PlaylistFilter | None,
+        Field(
+            description="Only playlists the user owns, or only those they follow. Omit for both."
+        ),
+    ] = None,
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[PlaylistSummary]:
+    """List the playlists the user owns or follows.
+
+    Only playlists the user owns can be changed by the write tools.
+    """
+    owner_filter = _QOBUZ_PLAYLIST_FILTERS[filter] if filter else None
+    payload = await qobuz(ctx).list_user_playlists(owner_filter, limit=limit, offset=offset)
+    return Page[PlaylistSummary](
+        **page_fields(payload.get("playlists"), playlist_summary, limit=limit, offset=offset)
+    )
