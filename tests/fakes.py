@@ -178,7 +178,7 @@ class FakeQobuz:
         """Form body of the last request to a write endpoint."""
         request = self.api_requests(endpoint)[-1]
         assert request.method == "POST"
-        return dict(urllib.parse.parse_qsl(request.content.decode()))
+        return dict(urllib.parse.parse_qsl(request.content.decode(), keep_blank_values=True))
 
     def api_requests(self, endpoint: str) -> list[httpx2.Request]:
         return [r for r in self.requests if r.url.path.endswith("/" + endpoint)]

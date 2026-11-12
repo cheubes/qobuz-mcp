@@ -42,9 +42,15 @@ async def test_add_favorites_sends_every_id_in_one_call(
     }
 
 
-async def test_one_kind_of_id_is_enough(client: Client[Any], fake_qobuz: FakeQobuz) -> None:
+async def test_missing_kinds_are_sent_empty_as_the_web_player_does(
+    client: Client[Any], fake_qobuz: FakeQobuz
+) -> None:
     await client.call_tool("add_favorites", {"track_ids": [101, 102]})
-    assert fake_qobuz.form("favorite/create") == {"track_ids": "101,102"}
+    assert fake_qobuz.form("favorite/create") == {
+        "album_ids": "",
+        "artist_ids": "",
+        "track_ids": "101,102",
+    }
 
 
 @pytest.mark.parametrize("arguments", [{}, {"album_ids": [], "artist_ids": [], "track_ids": []}])
