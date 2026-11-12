@@ -22,6 +22,7 @@ from qobuz_mcp.models import (
     artist_summary,
     current_album_summary,
     current_playlist_summary,
+    fixed_page_fields,
     genre,
     label_detail,
     page_fields,
@@ -295,4 +296,21 @@ async def list_featured_playlists(
     payload = await qobuz(ctx).list_featured_playlists(genre_id, tag, limit=limit, offset=offset)
     return Page[PlaylistSummary](
         **page_fields(payload, current_playlist_summary, limit=limit, offset=offset)
+    )
+
+
+async def list_similar_albums(
+    ctx: Context,
+    album_id: Annotated[str, Field(min_length=1, description="Qobuz album ID (a string).")],
+) -> Page[AlbumSummary]:
+    """List albums similar to a given album, as Qobuz recommends them.
+
+    Qobuz returns one fixed list of up to 30 albums, with no further pages.
+    """
+    payload = await qobuz(ctx).list_similar_albums(album_id)
+    albums = payload.get("albums")
+    return Page[AlbumSummary](
+        **fixed_page_fields(
+            albums.get("items") if isinstance(albums, dict) else None, current_album_summary
+        )
     )
