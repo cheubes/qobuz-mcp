@@ -13,7 +13,7 @@ from fastmcp.tools import ToolResult
 
 from qobuz_mcp.api import REQUEST_TIMEOUT_SECONDS
 from qobuz_mcp.errors import QobuzError
-from qobuz_mcp.tools import catalog, library
+from qobuz_mcp.tools import catalog, library, playlists
 
 INSTRUCTIONS = """\
 Tools to explore the Qobuz catalog and manage the user's Qobuz library.
@@ -84,6 +84,7 @@ mcp.tool(library.list_my_playlists, annotations=READ_ONLY)
 mcp.tool(library.list_purchases, annotations=READ_ONLY)
 mcp.tool(library.add_favorites, annotations=ADDITIVE)
 mcp.tool(library.remove_favorites, annotations=DESTRUCTIVE)
+mcp.tool(playlists.create_playlist, annotations=ADDITIVE)
 
 
 def run() -> None:
