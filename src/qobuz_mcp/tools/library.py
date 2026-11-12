@@ -138,3 +138,15 @@ async def add_favorites(
     albums, artists, tracks = album_ids or [], artist_ids or [], track_ids or []
     _require_ids(albums, artists, tracks)
     return write_result(await qobuz(ctx).add_favorites(albums, artists, tracks))
+
+
+async def remove_favorites(
+    ctx: Context,
+    album_ids: AlbumIds | None = None,
+    artist_ids: ArtistIds | None = None,
+    track_ids: TrackIds | None = None,
+) -> WriteResult:
+    """Remove albums, artists and/or tracks from the user's favorites, in one call."""
+    albums, artists, tracks = album_ids or [], artist_ids or [], track_ids or []
+    _require_ids(albums, artists, tracks)
+    return write_result(await qobuz(ctx).remove_favorites(albums, artists, tracks))
