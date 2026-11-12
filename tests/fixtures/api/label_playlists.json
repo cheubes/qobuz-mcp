@@ -1,0 +1,16 @@
+{
+  "has_more": false,
+  "items": [
+    {
+      "id": 204,
+      "name": "Synthetic Label Story",
+      "owner": {"id": 2, "name": "Synthetic Editor"},
+      "image": {"rectangle": "https://static.example/rectangle.jpg", "covers": []},
+      "description": "Synthetic label playlist.",
+      "duration": 4000,
+      "tracks_count": 15,
+      "genres": [{"id": 80, "name": "Jazz", "path": [80]}],
+      "tags": [{"id": 22, "slug": "label", "name": "Label Stories"}]
+    }
+  ]
+}
