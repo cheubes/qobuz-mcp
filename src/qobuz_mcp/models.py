@@ -176,6 +176,16 @@ class AwardDetail(BaseModel):
     albums: Page[AlbumSummary]
 
 
+class StorySummary(BaseModel):
+    id: str
+    url: str
+    title: str
+    summary: str | None
+    authors: list[str]
+    published_at: str | None
+    sections: list[str]
+
+
 class Genre(BaseModel):
     id: int
     name: str
@@ -561,6 +571,22 @@ def award_detail(
         albums=Page[AlbumSummary](
             **page_fields(albums, current_album_summary, limit=limit, offset=offset)
         ),
+    )
+
+
+def story_summary(raw: dict[str, Any]) -> StorySummary:
+    return StorySummary(
+        id=raw["id"],
+        url=web_player_url("story", raw["id"]),
+        title=raw["title"],
+        summary=raw.get("description_short"),
+        authors=[
+            author["name"]
+            for author in raw.get("authors") or []
+            if isinstance(author, dict) and isinstance(author.get("name"), str)
+        ],
+        published_at=_timestamp(raw.get("display_date")),
+        sections=[slug for slug in raw.get("section_slugs") or [] if isinstance(slug, str)],
     )
 
 
