@@ -1,0 +1,18 @@
+{
+  "has_more": false,
+  "items": [
+    {
+      "id": 203,
+      "title": "Synthetic Artist Essentials",
+      "description": "Synthetic playlist about a synthetic artist.",
+      "owner": {"id": 2, "name": "Synthetic Editor"},
+      "tracks_count": 25,
+      "duration": 7200,
+      "created_at": 1600000000,
+      "updated_at": 1700000000,
+      "images": {"rectangle": ["https://static.example/rectangle.jpg"]},
+      "genres": [{"id": 80, "name": "Jazz", "path": [80]}],
+      "tags": [{"name": {"en": "Artists"}, "is_discover": true}]
+    }
+  ]
+}

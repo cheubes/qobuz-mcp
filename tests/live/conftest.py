@@ -23,6 +23,7 @@ READ_ONLY_ENDPOINTS = frozenset(
         "track/get",
         "artist/page",
         "artist/getReleasesList",
+        "artist/playlists",
         "artist/getSimilarArtists",
         "label/page",
         "label/getAlbums",
