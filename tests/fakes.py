@@ -210,6 +210,8 @@ class FakeQobuz:
             return httpx2.Response(200, json={"albums": SEARCH_RESULTS["albums"]})
         if endpoint == "discover/playlists":
             return httpx2.Response(200, json=DISCOVER_PLAYLISTS)
+        if endpoint == "favorite/getNewReleases":
+            return httpx2.Response(200, json=LABEL_ALBUMS)
         if endpoint == "favorite/getUserFavorites":
             kind = request.url.params["type"]
             return httpx2.Response(200, json={kind: FAVORITES[kind], "user": {"id": 42}})

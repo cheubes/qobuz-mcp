@@ -98,7 +98,7 @@ A tool marked `(planned)` after its name is specified but not exposed yet. The p
 | `list_favorites` | Favorite albums, artists or tracks, newest first, each with the date it was added | `type`, `limit`, `offset` |
 | `list_my_playlists` | Playlists owned or followed by the user | `filter` (optional: `owned` or `followed`), `limit`, `offset` |
 | `list_purchases` | Purchased albums or tracks | `type`, `limit`, `offset` |
-| `list_new_releases_from_favorites` (planned) | Recent releases from the user's favorite artists, labels or awards | `source` (`artists`, `labels` or `awards`), `genre_id` (optional), `limit`, `offset` |
+| `list_new_releases_from_favorites` | Recent releases from the user's favorite artists, labels or awards | `source` (`artists`, `labels` or `awards`), `genre_id` (optional), `limit`, `offset` |
 | `check_library` (planned) | Whether given albums, artists and tracks are favorites, and whether given albums and tracks are purchased | `album_ids`, `artist_ids`, `track_ids` |
 
 ### 5.3 Library, write

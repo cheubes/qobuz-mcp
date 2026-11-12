@@ -14,6 +14,7 @@ from qobuz_mcp.models import (
     WriteResult,
     album_summary,
     artist_summary,
+    current_album_summary,
     favorited_at,
     page_fields,
     playlist_summary,
@@ -79,6 +80,28 @@ async def list_favorites(
                     offset=offset,
                 )
             )
+
+
+async def list_new_releases_from_favorites(
+    ctx: Context,
+    source: Annotated[
+        Literal["artists", "labels", "awards"],
+        Field(description="Whose new releases: the user's favorite artists, labels or awards."),
+    ],
+    genre_id: Annotated[
+        int | None,
+        Field(ge=1, description="Only releases of this genre (an ID from `list_genres`)."),
+    ] = None,
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[AlbumSummary]:
+    """List recent releases from the user's favorite artists, labels or awards."""
+    payload = await qobuz(ctx).list_new_releases_from_favorites(
+        source, genre_id, limit=limit, offset=offset
+    )
+    return Page[AlbumSummary](
+        **page_fields(payload, current_album_summary, limit=limit, offset=offset)
+    )
 
 
 async def list_my_playlists(
