@@ -22,6 +22,7 @@ from qobuz_mcp.models import (
     artist_summary,
     current_album_summary,
     current_playlist_summary,
+    current_track_summary,
     fixed_page_fields,
     genre,
     label_detail,
@@ -312,5 +313,32 @@ async def list_similar_albums(
     return Page[AlbumSummary](
         **fixed_page_fields(
             albums.get("items") if isinstance(albums, dict) else None, current_album_summary
+        )
+    )
+
+
+async def get_radio(
+    ctx: Context,
+    seed_type: Annotated[
+        Literal["album", "artist", "track"], Field(description="What the radio is built from.")
+    ],
+    seed_id: Annotated[
+        str,
+        Field(
+            min_length=1,
+            description="Qobuz ID of the seed: an album ID, or an artist or track ID in digits.",
+        ),
+    ],
+) -> Page[TrackSummary]:
+    """Get the tracks of a radio built by Qobuz from an album, an artist or a track.
+
+    Qobuz returns one fixed list of up to 30 tracks, with no further pages. Use
+    `suggest_tracks` instead to continue a list of tracks, such as a playlist.
+    """
+    payload = await qobuz(ctx).get_radio(seed_type, seed_id)
+    tracks = payload.get("tracks")
+    return Page[TrackSummary](
+        **fixed_page_fields(
+            tracks.get("items") if isinstance(tracks, dict) else None, current_track_summary
         )
     )

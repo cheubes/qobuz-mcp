@@ -21,3 +21,16 @@ async def test_list_similar_albums(live_client: Client[Any]) -> None:
     assert page is not None
     assert page["has_more"] is False
     assert all(item["url"].startswith("https://open.qobuz.com/album/") for item in page["items"])
+
+
+async def test_get_radio(live_client: Client[Any]) -> None:
+    """AC-LIVE-09"""
+    album = await first_album(live_client)
+    for seed_type, seed_id in (("album", album["id"]), ("artist", str(album["artist"]["id"]))):
+        result = await live_client.call_tool(
+            "get_radio", {"seed_type": seed_type, "seed_id": seed_id}
+        )
+        page = result.structured_content
+        assert page is not None
+        assert page["items"]
+        assert page["items"][0]["url"].startswith("https://open.qobuz.com/track/")

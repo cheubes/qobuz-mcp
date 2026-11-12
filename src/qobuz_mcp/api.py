@@ -252,6 +252,9 @@ class QobuzClient:
     async def list_similar_albums(self, album_id: str) -> dict[str, Any]:
         return await self.get("album/suggest", {"album_id": album_id})
 
+    async def get_radio(self, seed_type: str, seed_id: str) -> dict[str, Any]:
+        return await self.get(f"radio/{seed_type}", {f"{seed_type}_id": seed_id})
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
