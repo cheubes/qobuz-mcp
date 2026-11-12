@@ -20,6 +20,11 @@ class Page[T: BaseModel](BaseModel):
     offset: int
 
 
+class Favorite[T: BaseModel](BaseModel):
+    item: T
+    favorited_at: str | None
+
+
 class ArtistRef(BaseModel):
     id: int
     name: str
@@ -213,6 +218,10 @@ def _timestamp(value: Any) -> str | None:
     if not isinstance(value, int | float):
         return None
     return datetime.fromtimestamp(value, UTC).isoformat()
+
+
+def favorited_at(raw: dict[str, Any]) -> str | None:
+    return _timestamp(raw.get("favorited_at"))
 
 
 def album_summary(raw: dict[str, Any]) -> AlbumSummary:

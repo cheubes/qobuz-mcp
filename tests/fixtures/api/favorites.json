@@ -1,0 +1,113 @@
+{
+  "albums": {
+    "limit": 25,
+    "offset": 0,
+    "total": 2,
+    "items": [
+      {
+        "id": "0000000000001",
+        "title": "First Synthetic Album",
+        "version": null,
+        "artist": {
+          "id": 11,
+          "name": "Synthetic Artist",
+          "slug": "synthetic-artist"
+        },
+        "release_date_original": "1959-08-17",
+        "tracks_count": 5,
+        "duration": 2760,
+        "genre": {
+          "id": 80,
+          "name": "Jazz",
+          "slug": "jazz"
+        },
+        "label": {
+          "id": 21,
+          "name": "Synthetic Label"
+        },
+        "maximum_bit_depth": 24,
+        "maximum_sampling_rate": 192,
+        "maximum_channel_count": 2,
+        "hires": true,
+        "parental_warning": false,
+        "streamable": true,
+        "image": {
+          "large": "https://example.invalid/cover.jpg"
+        },
+        "favorited_at": 1700000000
+      },
+      {
+        "id": "0000000000002",
+        "title": "Second Synthetic Album",
+        "version": "Remastered",
+        "artist": {
+          "id": 11,
+          "name": "Synthetic Artist"
+        },
+        "release_date_original": "1960-01-01",
+        "tracks_count": 9,
+        "duration": 3120,
+        "genre": {
+          "id": 80,
+          "name": "Jazz"
+        },
+        "label": {
+          "id": 21,
+          "name": "Synthetic Label"
+        },
+        "maximum_bit_depth": 16,
+        "maximum_sampling_rate": 44.1,
+        "maximum_channel_count": 2,
+        "hires": false,
+        "parental_warning": false,
+        "streamable": true,
+        "favorited_at": 1699913600
+      }
+    ]
+  },
+  "artists": {
+    "limit": 25,
+    "offset": 0,
+    "total": 1,
+    "items": [
+      {
+        "id": 11,
+        "name": "Synthetic Artist",
+        "albums_count": 42,
+        "slug": "synthetic-artist",
+        "favorited_at": 1690000000
+      }
+    ]
+  },
+  "tracks": {
+    "limit": 25,
+    "offset": 0,
+    "total": 1,
+    "items": [
+      {
+        "id": 101,
+        "title": "Synthetic Track",
+        "version": null,
+        "performer": {
+          "id": 11,
+          "name": "Synthetic Artist"
+        },
+        "album": {
+          "id": "0000000000001",
+          "title": "First Synthetic Album"
+        },
+        "track_number": 1,
+        "media_number": 1,
+        "duration": 545,
+        "maximum_bit_depth": 24,
+        "maximum_sampling_rate": 192,
+        "maximum_channel_count": 2,
+        "hires": true,
+        "parental_warning": false,
+        "streamable": true,
+        "performers": "Synthetic Artist, MainArtist",
+        "favorited_at": 1680000000
+      }
+    ]
+  }
+}
