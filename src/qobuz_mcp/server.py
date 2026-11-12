@@ -31,6 +31,9 @@ READ_ONLY = mcp_types.ToolAnnotations(read_only_hint=True, open_world_hint=True)
 ADDITIVE = mcp_types.ToolAnnotations(
     read_only_hint=False, destructive_hint=False, open_world_hint=True
 )
+DESTRUCTIVE = mcp_types.ToolAnnotations(
+    read_only_hint=False, destructive_hint=True, open_world_hint=True
+)
 
 
 def http_client() -> httpx2.AsyncClient:
@@ -80,6 +83,7 @@ mcp.tool(library.list_favorites, annotations=READ_ONLY)
 mcp.tool(library.list_my_playlists, annotations=READ_ONLY)
 mcp.tool(library.list_purchases, annotations=READ_ONLY)
 mcp.tool(library.add_favorites, annotations=ADDITIVE)
+mcp.tool(library.remove_favorites, annotations=DESTRUCTIVE)
 
 
 def run() -> None:
