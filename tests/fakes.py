@@ -123,6 +123,9 @@ class FakeQobuz:
             return httpx2.Response(
                 200, json={"playlists": SEARCH_RESULTS["playlists"], "user": {"id": 42}}
             )
+        if endpoint == "purchase/getUserPurchases":
+            kind = request.url.params["type"]
+            return httpx2.Response(200, json={kind: SEARCH_RESULTS[kind], "user": {"id": 42}})
         if endpoint == "genre/list":
             parent = request.url.params.get("parent_id")
             items = [
