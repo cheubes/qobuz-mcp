@@ -74,7 +74,7 @@ Each tool declares MCP annotations. Read-only tools can be allowlisted once in t
 | `get_similar_artists` | Artists similar to a given artist | `artist_id`, `limit`, `offset` |
 | `get_label` | Label details and paginated albums | `label_id`, `limit`, `offset` |
 | `get_playlist` | Playlist details and paginated tracks | `playlist_id`, `limit`, `offset` |
-| `list_genres` | Genre tree | `parent_genre_id` (optional) |
+| `list_genres` | Genre tree, one level at a time | `parent_genre_id` (optional), `limit`, `offset` |
 | `list_featured_albums` | Editorial album lists, by category: new releases, press awards, best sellers, most streamed, editor picks, ideal discography, Qobuzissimes and the other categories Qobuz accepts | `category`, `genre_id` (optional), `limit`, `offset` |
 | `list_featured_playlists` | Editorial playlists, optionally for one genre | `genre_id` (optional), `limit`, `offset` |
 

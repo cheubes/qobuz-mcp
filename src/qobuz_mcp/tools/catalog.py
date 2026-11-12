@@ -8,6 +8,7 @@ from qobuz_mcp.models import (
     AlbumSummary,
     ArtistDetail,
     ArtistSummary,
+    Genre,
     LabelDetail,
     Page,
     PlaylistDetail,
@@ -18,6 +19,7 @@ from qobuz_mcp.models import (
     album_summary,
     artist_detail,
     artist_summary,
+    genre,
     label_detail,
     page_fields,
     playlist_detail,
@@ -153,3 +155,21 @@ async def get_label(
     """
     payload = await qobuz(ctx).get_label(label_id, limit=limit, offset=offset)
     return label_detail(payload, limit=limit, offset=offset)
+
+
+async def list_genres(
+    ctx: Context,
+    parent_genre_id: Annotated[
+        int | None,
+        Field(ge=1, description="List the sub-genres of this genre. Omit for top-level genres."),
+    ] = None,
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[Genre]:
+    """List Qobuz genres, one level of the tree at a time.
+
+    Each genre's `path` holds its ancestor genre IDs, from the root to its direct parent.
+    Genre IDs filter `list_featured_albums` and `list_featured_playlists`.
+    """
+    payload = await qobuz(ctx).list_genres(parent_genre_id, limit=limit, offset=offset)
+    return Page[Genre](**page_fields(payload.get("genres"), genre, limit=limit, offset=offset))

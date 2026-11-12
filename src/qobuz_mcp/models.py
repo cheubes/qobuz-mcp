@@ -142,6 +142,12 @@ class LabelDetail(BaseModel):
     albums: Page[AlbumSummary]
 
 
+class Genre(BaseModel):
+    id: int
+    name: str
+    path: list[int]
+
+
 class PlaylistSummary(BaseModel):
     id: int
     url: str
@@ -348,6 +354,12 @@ def label_detail(raw: dict[str, Any], *, limit: int, offset: int) -> LabelDetail
             **page_fields(raw.get("albums"), album_summary, limit=limit, offset=offset)
         ),
     )
+
+
+def genre(raw: dict[str, Any]) -> Genre:
+    # Qobuz's path starts with the genre itself and climbs to the root.
+    ancestors = [genre_id for genre_id in raw.get("path") or [] if genre_id != raw["id"]]
+    return Genre(id=raw["id"], name=raw["name"], path=list(reversed(ancestors)))
 
 
 def playlist_summary(raw: dict[str, Any]) -> PlaylistSummary:
