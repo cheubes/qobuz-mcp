@@ -166,6 +166,12 @@ class QobuzClient:
             {"type": source, "genre_ids": genre_id, "limit": limit, "offset": offset},
         )
 
+    async def get_favorite_ids(self) -> dict[str, Any]:
+        return await self.get("favorite/getUserFavoriteIds")
+
+    async def get_purchase_ids(self) -> dict[str, Any]:
+        return await self.get("purchase/getUserPurchasesIds")
+
     async def list_user_playlists(
         self, owner_filter: str | None, *, limit: int, offset: int
     ) -> dict[str, Any]:

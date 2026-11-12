@@ -186,6 +186,18 @@ class StorySummary(BaseModel):
     sections: list[str]
 
 
+class ItemStatus(BaseModel):
+    id: str | int
+    favorite: bool
+    purchased: bool | None
+
+
+class LibraryStatus(BaseModel):
+    albums: list[ItemStatus]
+    artists: list[ItemStatus]
+    tracks: list[ItemStatus]
+
+
 class Genre(BaseModel):
     id: int
     name: str
@@ -587,6 +599,50 @@ def story_summary(raw: dict[str, Any]) -> StorySummary:
         ],
         published_at=_timestamp(raw.get("display_date")),
         sections=[slug for slug in raw.get("section_slugs") or [] if isinstance(slug, str)],
+    )
+
+
+def _id_set(values: Any) -> set[str]:
+    """IDs as strings, from a list of IDs or of objects with an `id`."""
+    ids = set()
+    for value in values if isinstance(values, list) else []:
+        item_id = value.get("id") if isinstance(value, dict) else value
+        if isinstance(item_id, str | int):
+            ids.add(str(item_id))
+    return ids
+
+
+def library_status(
+    favorites: dict[str, Any],
+    purchases: dict[str, Any],
+    *,
+    album_ids: list[str],
+    artist_ids: list[int],
+    track_ids: list[int],
+) -> LibraryStatus:
+    """Whether given items are favorites or purchases. The account data Qobuz sends along,
+    such as the login under `user`, is never read (FS-BEH-3)."""
+
+    def purchased(kind: str) -> set[str]:
+        group = purchases.get(kind)
+        return _id_set(group.get("items") if isinstance(group, dict) else None)
+
+    def statuses(ids: list[str] | list[int], kind: str, purchasable: bool) -> list[ItemStatus]:
+        favorite_ids = _id_set(favorites.get(kind))
+        purchased_ids = purchased(kind) if purchasable else set()
+        return [
+            ItemStatus(
+                id=item_id,
+                favorite=str(item_id) in favorite_ids,
+                purchased=str(item_id) in purchased_ids if purchasable else None,
+            )
+            for item_id in ids
+        ]
+
+    return LibraryStatus(
+        albums=statuses(album_ids, "albums", purchasable=True),
+        artists=statuses(artist_ids, "artists", purchasable=False),
+        tracks=statuses(track_ids, "tracks", purchasable=True),
     )
 
 

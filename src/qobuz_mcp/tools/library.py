@@ -8,6 +8,7 @@ from qobuz_mcp.models import (
     AlbumSummary,
     ArtistSummary,
     Favorite,
+    LibraryStatus,
     Page,
     PlaylistSummary,
     TrackSummary,
@@ -16,6 +17,7 @@ from qobuz_mcp.models import (
     artist_summary,
     current_album_summary,
     favorited_at,
+    library_status,
     page_fields,
     playlist_summary,
     track_summary,
@@ -173,3 +175,24 @@ async def remove_favorites(
     albums, artists, tracks = album_ids or [], artist_ids or [], track_ids or []
     _require_ids(albums, artists, tracks)
     return write_result(await qobuz(ctx).remove_favorites(albums, artists, tracks))
+
+
+async def check_library(
+    ctx: Context,
+    album_ids: AlbumIds | None = None,
+    artist_ids: ArtistIds | None = None,
+    track_ids: TrackIds | None = None,
+) -> LibraryStatus:
+    """Check whether given albums, artists and tracks are in the user's favorites, and whether
+    given albums and tracks are purchased.
+
+    Results keep the order of the given IDs. `purchased` is null for artists.
+    """
+    albums, artists, tracks = album_ids or [], artist_ids or [], track_ids or []
+    _require_ids(albums, artists, tracks)
+    client = qobuz(ctx)
+    favorites = await client.get_favorite_ids()
+    purchases = await client.get_purchase_ids() if albums or tracks else {}
+    return library_status(
+        favorites, purchases, album_ids=albums, artist_ids=artists, track_ids=tracks
+    )
