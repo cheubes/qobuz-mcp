@@ -26,6 +26,7 @@ PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_get.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_get.json").read_text())
 FAVORITES = json.loads((FIXTURES / "api" / "favorites.json").read_text())
+DISCOVER_PLAYLISTS = json.loads((FIXTURES / "api" / "discover_playlists.json").read_text())
 # Write endpoints answer with the playlist object or with a status (proof of concept).
 PLAYLIST_WRITE_ENDPOINTS = frozenset(
     {
@@ -147,8 +148,8 @@ class FakeQobuz:
             return httpx2.Response(200, json=LABEL)
         if endpoint == "album/getFeatured":
             return httpx2.Response(200, json={"albums": SEARCH_RESULTS["albums"]})
-        if endpoint == "playlist/getFeatured":
-            return httpx2.Response(200, json={"playlists": SEARCH_RESULTS["playlists"]})
+        if endpoint == "discover/playlists":
+            return httpx2.Response(200, json=DISCOVER_PLAYLISTS)
         if endpoint == "favorite/getUserFavorites":
             kind = request.url.params["type"]
             return httpx2.Response(200, json={kind: FAVORITES[kind], "user": {"id": 42}})

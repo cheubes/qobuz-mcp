@@ -31,3 +31,13 @@ async def test_get_album_returns_a_tracklist_and_audio_quality(live_client: Clie
     assert album["tracks"]["total"] >= len(album["tracks"]["items"])
     assert album["audio_quality"]["bit_depth"]
     assert album["audio_quality"]["sampling_rate_khz"]
+
+
+async def test_featured_playlists_for_a_tag(live_client: Client[Any]) -> None:
+    """AC-LIVE-07"""
+    result = await live_client.call_tool("list_featured_playlists", {"tag": "hi-res", "limit": 3})
+    page = result.structured_content
+    assert page is not None
+    assert page["items"]
+    playlist = page["items"][0]
+    assert playlist["url"] == f"https://open.qobuz.com/playlist/{playlist['id']}"

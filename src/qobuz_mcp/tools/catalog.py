@@ -19,6 +19,7 @@ from qobuz_mcp.models import (
     album_summary,
     artist_detail,
     artist_summary,
+    current_playlist_summary,
     genre,
     label_detail,
     page_fields,
@@ -48,6 +49,23 @@ FeaturedAlbumCategory = Literal[
     "universal-jazz",
     "universal-jeunesse",
     "universal-chanson",
+]
+
+# The slugs playlist/getTags returned when observed (ADR-0033).
+PlaylistTag = Literal[
+    "hi-res",
+    "new",
+    "focus",
+    "mood",
+    "artist",
+    "danslecasque",
+    "label",
+    "qobuzdigs",
+    "event",
+    "auditoriums",
+    "speakers",
+    "ideal-discography",
+    "popular",
 ]
 
 GenreFilter = Annotated[
@@ -223,14 +241,25 @@ async def list_featured_albums(
 async def list_featured_playlists(
     ctx: Context,
     genre_id: GenreFilter = None,
+    tag: Annotated[
+        PlaylistTag | None,
+        Field(
+            description=(
+                "Only playlists with this tag: hi-res, new (new releases), focus, mood, artist, "
+                "danslecasque (listening with...), label (label stories), qobuzdigs, event "
+                "(events and media), auditoriums (hi-fi audio partners), speakers (test your "
+                "speakers), ideal-discography, popular (top playlists)."
+            )
+        ),
+    ] = None,
     limit: Limit = DEFAULT_LIMIT,
     offset: Offset = 0,
 ) -> Page[PlaylistSummary]:
-    """List Qobuz's editorial playlists, optionally for one genre.
+    """List Qobuz's editorial playlists, optionally for one genre or one tag.
 
     Use `get_playlist` to see a playlist's tracks.
     """
-    payload = await qobuz(ctx).list_featured_playlists(genre_id, limit=limit, offset=offset)
+    payload = await qobuz(ctx).list_featured_playlists(genre_id, tag, limit=limit, offset=offset)
     return Page[PlaylistSummary](
-        **page_fields(payload.get("playlists"), playlist_summary, limit=limit, offset=offset)
+        **page_fields(payload, current_playlist_summary, limit=limit, offset=offset)
     )
