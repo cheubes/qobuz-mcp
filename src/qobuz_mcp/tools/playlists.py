@@ -8,6 +8,13 @@ from qobuz_mcp.models import PlaylistSummary, playlist_summary
 from qobuz_mcp.tools.common import qobuz
 
 PlaylistId = Annotated[int, Field(ge=1, description="Qobuz ID of a playlist the user owns.")]
+PlaylistTrackIds = Annotated[
+    list[int],
+    Field(
+        min_length=1,
+        description="`playlist_track_id` values from `get_playlist`, not track IDs.",
+    ),
+]
 
 
 async def create_playlist(
@@ -66,3 +73,17 @@ async def add_tracks_to_playlist(
 ) -> PlaylistSummary:
     """Append tracks at the end of a playlist the user owns, in the given order."""
     return playlist_summary(await qobuz(ctx).add_tracks_to_playlist(playlist_id, track_ids))
+
+
+async def remove_tracks_from_playlist(
+    ctx: Context,
+    playlist_id: PlaylistId,
+    playlist_track_ids: PlaylistTrackIds,
+) -> PlaylistSummary:
+    """Remove entries from a playlist the user owns.
+
+    Entries are identified by `playlist_track_id`, so only the targeted occurrence of a track
+    that appears several times is removed.
+    """
+    payload = await qobuz(ctx).remove_tracks_from_playlist(playlist_id, playlist_track_ids)
+    return playlist_summary(payload)
