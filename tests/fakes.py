@@ -26,6 +26,39 @@ PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_get.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_get.json").read_text())
 FAVORITES = json.loads((FIXTURES / "api" / "favorites.json").read_text())
+# Write endpoints answer with the playlist object or with a status (proof of concept).
+PLAYLIST_WRITE_ENDPOINTS = frozenset(
+    {
+        "playlist/create",
+        "playlist/update",
+        "playlist/addTracks",
+        "playlist/deleteTracks",
+        "playlist/updateTracksPosition",
+    }
+)
+STATUS_WRITE_ENDPOINTS = frozenset(
+    {
+        "playlist/delete",
+        "favorite/create",
+        "favorite/delete",
+        "playlist/subscribe",
+        "playlist/unsubscribe",
+    }
+)
+WRITTEN_PLAYLIST = {
+    "id": 301,
+    "name": "Synthetic New Playlist",
+    "description": "",
+    "owner": {"id": 42, "name": "Test User"},
+    "tracks_count": 0,
+    "duration": 0,
+    "is_public": False,
+    "is_collaborative": False,
+    "public_at": False,
+    "created_at": 1700000000,
+    "updated_at": 1700000000,
+    "users_count": 0,
+}
 GENRES: list[dict[str, Any]] = [
     {"id": 112, "name": "Pop/Rock", "path": [112], "slug": "pop-rock", "color": "#000000"},
     {"id": 80, "name": "Jazz", "path": [80], "slug": "jazz", "color": "#000000"},
@@ -126,6 +159,10 @@ class FakeQobuz:
         if endpoint == "purchase/getUserPurchases":
             kind = request.url.params["type"]
             return httpx2.Response(200, json={kind: SEARCH_RESULTS[kind], "user": {"id": 42}})
+        if endpoint in PLAYLIST_WRITE_ENDPOINTS:
+            return httpx2.Response(200, json=WRITTEN_PLAYLIST)
+        if endpoint in STATUS_WRITE_ENDPOINTS:
+            return httpx2.Response(200, json={"status": "success"})
         if endpoint == "genre/list":
             parent = request.url.params.get("parent_id")
             items = [
@@ -136,6 +173,12 @@ class FakeQobuz:
                 json={"genres": {"limit": 25, "offset": 0, "total": len(items), "items": items}},
             )
         return httpx2.Response(404)
+
+    def form(self, endpoint: str) -> dict[str, str]:
+        """Form body of the last request to a write endpoint."""
+        request = self.api_requests(endpoint)[-1]
+        assert request.method == "POST"
+        return dict(urllib.parse.parse_qsl(request.content.decode()))
 
     def api_requests(self, endpoint: str) -> list[httpx2.Request]:
         return [r for r in self.requests if r.url.path.endswith("/" + endpoint)]

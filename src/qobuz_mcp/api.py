@@ -136,6 +136,14 @@ class QobuzClient:
             "purchase/getUserPurchases", {"type": kind, "limit": limit, "offset": offset}
         )
 
+    async def add_favorites(
+        self, album_ids: list[str], artist_ids: list[int], track_ids: list[int]
+    ) -> dict[str, Any]:
+        return await self.post(
+            "favorite/create",
+            {"album_ids": album_ids, "artist_ids": artist_ids, "track_ids": track_ids},
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
