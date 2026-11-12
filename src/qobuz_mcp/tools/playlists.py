@@ -8,6 +8,7 @@ from qobuz_mcp.models import PlaylistSummary, WriteResult, playlist_summary, wri
 from qobuz_mcp.tools.common import qobuz
 
 PlaylistId = Annotated[int, Field(ge=1, description="Qobuz ID of a playlist the user owns.")]
+AnyPlaylistId = Annotated[int, Field(ge=1, description="Qobuz playlist ID (an integer).")]
 PlaylistTrackIds = Annotated[
     list[int],
     Field(
@@ -119,3 +120,11 @@ async def delete_playlist(ctx: Context, playlist_id: PlaylistId) -> WriteResult:
     To stop following someone else's playlist, use `unfollow_playlist` instead.
     """
     return write_result(await qobuz(ctx).delete_playlist(playlist_id))
+
+
+async def follow_playlist(ctx: Context, playlist_id: AnyPlaylistId) -> WriteResult:
+    """Follow a playlist, such as an editorial or another user's playlist.
+
+    Followed playlists appear in `list_my_playlists`.
+    """
+    return write_result(await qobuz(ctx).follow_playlist(playlist_id))
