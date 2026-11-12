@@ -72,6 +72,10 @@ PlaylistTag = Literal[
     "popular",
 ]
 
+# The release types artist/getReleasesList accepts, except `all` (no filter) and `download`,
+# whose meaning is not documented.
+ReleaseType = Literal["album", "live", "compilation", "epSingle", "other", "awardedRelease", "next"]
+
 GenreFilter = Annotated[
     int | None, Field(ge=1, description="Only items of this genre (an ID from `list_genres`).")
 ]
@@ -158,20 +162,38 @@ async def get_artist(
     ctx: Context,
     artist_id: Annotated[int, Field(ge=1, description="Qobuz artist ID (an integer).")],
     full_biography: Annotated[
-        bool, Field(description="Also return the full biography, which can be long.")
+        bool, Field(description="Return the full biography, which can be long, not an excerpt.")
     ] = False,
+    release_type: Annotated[
+        ReleaseType | None,
+        Field(
+            description=(
+                "Only releases of this type: album, live, compilation, epSingle (EPs and "
+                "singles), other, awardedRelease (releases with a press award), next (upcoming "
+                "releases). Omit for the whole discography."
+            )
+        ),
+    ] = None,
     limit: Limit = DEFAULT_LIMIT,
     offset: Offset = 0,
 ) -> ArtistDetail:
-    """Get an artist's biography summary and discography.
+    """Get an artist's biography and discography, newest releases first.
 
-    The full biography (often several thousand characters) is returned only when
-    `full_biography` is true: ask for it when the user wants to know more about the artist.
-    The discography is paginated with `limit` and `offset`; `albums.has_more` tells whether more
-    albums exist. Use `get_similar_artists` to discover related artists.
+    By default, `biography` is the start of the biography, at most 1,000 characters cut at a
+    sentence end, and `biography_truncated` tells whether text was cut. Set `full_biography`
+    when the user wants to know more about the artist: the full text can reach several
+    thousand characters. The discography is paginated with `limit` and `offset`;
+    `albums.has_more` tells whether more releases exist. Use `get_similar_artists` to discover
+    related artists.
     """
-    payload = await qobuz(ctx).get_artist(artist_id, limit=limit, offset=offset)
-    return artist_detail(payload, full_biography=full_biography, limit=limit, offset=offset)
+    client = qobuz(ctx)
+    artist = await client.get_artist(artist_id)
+    releases = await client.list_artist_releases(
+        artist_id, release_type, limit=limit, offset=offset
+    )
+    return artist_detail(
+        artist, releases, full_biography=full_biography, limit=limit, offset=offset
+    )
 
 
 async def get_similar_artists(

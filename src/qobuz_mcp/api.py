@@ -86,10 +86,21 @@ class QobuzClient:
     async def get_album(self, album_id: str, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get("album/get", {"album_id": album_id, "limit": limit, "offset": offset})
 
-    async def get_artist(self, artist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
+    async def get_artist(self, artist_id: int) -> dict[str, Any]:
+        return await self.get("artist/page", {"artist_id": artist_id, "sort": "relevant"})
+
+    async def list_artist_releases(
+        self, artist_id: int, release_type: str | None, *, limit: int, offset: int
+    ) -> dict[str, Any]:
         return await self.get(
-            "artist/get",
-            {"artist_id": artist_id, "extra": "albums", "limit": limit, "offset": offset},
+            "artist/getReleasesList",
+            {
+                "artist_id": artist_id,
+                "release_type": release_type,
+                "sort": "release_date",
+                "limit": limit,
+                "offset": offset,
+            },
         )
 
     async def get_similar_artists(

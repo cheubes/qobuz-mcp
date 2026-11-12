@@ -23,7 +23,8 @@ SEARCH_TYPES = ("albums", "artists", "tracks", "playlists")
 ALBUM = json.loads((FIXTURES / "api" / "album_get.json").read_text())
 TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
-ARTIST = json.loads((FIXTURES / "api" / "artist_get.json").read_text())
+ARTIST = json.loads((FIXTURES / "api" / "artist_page.json").read_text())
+ARTIST_RELEASES = json.loads((FIXTURES / "api" / "artist_releases.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_page.json").read_text())
 LABEL_ALBUMS = json.loads((FIXTURES / "api" / "label_albums.json").read_text())
 FAVORITES = json.loads((FIXTURES / "api" / "favorites.json").read_text())
@@ -135,10 +136,12 @@ class FakeQobuz:
             if request.url.params["playlist_id"] != str(PLAYLIST["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=PLAYLIST)
-        if endpoint == "artist/get":
+        if endpoint in ("artist/page", "artist/getReleasesList"):
             if request.url.params["artist_id"] != str(ARTIST["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
-            return httpx2.Response(200, json=ARTIST)
+            return httpx2.Response(
+                200, json=ARTIST if endpoint == "artist/page" else ARTIST_RELEASES
+            )
         if endpoint == "artist/getSimilarArtists":
             if request.url.params["artist_id"] != str(ARTIST["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})

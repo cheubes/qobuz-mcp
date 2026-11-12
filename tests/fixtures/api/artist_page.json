@@ -1,0 +1,27 @@
+{
+  "id": 11,
+  "name": {
+    "display": "Synthetic Artist"
+  },
+  "artist_category": "performer",
+  "biography": {
+    "content": "<p>Synthetic sentence 1 describes an imaginary career in some detail. Synthetic sentence 2 describes an imaginary career in some detail. Synthetic sentence 3 describes an imaginary career in some detail. Synthetic sentence 4 describes an imaginary career in some detail. Synthetic sentence 5 describes an imaginary career in some detail. Synthetic sentence 6 describes an imaginary career in some detail. Synthetic sentence 7 describes an imaginary career in some detail. Synthetic sentence 8 describes an imaginary career in some detail. Synthetic sentence 9 describes an imaginary career in some detail. Synthetic sentence 10 describes an imaginary career in some detail. Synthetic sentence 11 describes an imaginary career in some detail. Synthetic sentence 12 describes an imaginary career in some detail. Synthetic sentence 13 describes an imaginary career in some detail. Synthetic sentence 14 describes an imaginary career in some detail. Synthetic sentence 15 describes an imaginary career in some detail. Synthetic sentence 16 describes an imaginary career in some detail. Synthetic sentence 17 describes an imaginary career in some detail. Synthetic sentence 18 describes an imaginary career in some detail. Synthetic sentence 19 describes an imaginary career in some detail. Synthetic sentence 20 describes an imaginary career in some detail.</p><p>Synthetic sentence 21 describes an imaginary career in some detail. Synthetic sentence 22 describes an imaginary career in some detail. Synthetic sentence 23 describes an imaginary career in some detail. Synthetic sentence 24 describes an imaginary career in some detail. Synthetic sentence 25 describes an imaginary career in some detail. Synthetic sentence 26 describes an imaginary career in some detail. Synthetic sentence 27 describes an imaginary career in some detail. Synthetic sentence 28 describes an imaginary career in some detail. Synthetic sentence 29 describes an imaginary career in some detail. Synthetic sentence 30 describes an imaginary career in some detail. Synthetic sentence 31 describes an imaginary career in some detail. Synthetic sentence 32 describes an imaginary career in some detail. Synthetic sentence 33 describes an imaginary career in some detail. Synthetic sentence 34 describes an imaginary career in some detail. Synthetic sentence 35 describes an imaginary career in some detail. Synthetic sentence 36 describes an imaginary career in some detail. Synthetic sentence 37 describes an imaginary career in some detail. Synthetic sentence 38 describes an imaginary career in some detail. Synthetic sentence 39 describes an imaginary career in some detail. Synthetic sentence 40 describes an imaginary career in some detail.</p>",
+    "source": null,
+    "language": "en"
+  },
+  "images": {
+    "portrait": null
+  },
+  "similar_artists": {
+    "has_more": false,
+    "items": []
+  },
+  "top_tracks": [],
+  "last_release": null,
+  "releases": [],
+  "tracks_appears_on": [],
+  "playlists": {
+    "has_more": false,
+    "items": []
+  }
+}

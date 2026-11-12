@@ -69,3 +69,17 @@ async def test_featured_albums_from_both_endpoint_families(
     album = page["items"][0]
     assert album["url"] == f"https://open.qobuz.com/album/{album['id']}"
     assert album["title"]
+
+
+async def test_get_artist_returns_a_biography_excerpt_and_albums(live_client: Client[Any]) -> None:
+    """AC-LIVE-08"""
+    search = await live_client.call_tool(
+        "search_catalog", {"query": "Miles Davis", "type": "artists", "limit": 1}
+    )
+    artist_id = search.structured_content["result"]["items"][0]["id"]  # type: ignore[index]
+    result = await live_client.call_tool("get_artist", {"artist_id": artist_id, "limit": 3})
+    artist = result.structured_content
+    assert artist is not None
+    assert artist["biography"]
+    assert len(artist["biography"]) <= 1000
+    assert artist["albums"]["items"]

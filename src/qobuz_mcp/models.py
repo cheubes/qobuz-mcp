@@ -143,8 +143,8 @@ class ArtistSummary(BaseModel):
 
 
 class ArtistDetail(ArtistSummary):
-    biography_summary: str | None
     biography: str | None
+    biography_truncated: bool
     albums: Page[AlbumSummary]
 
 
@@ -354,17 +354,37 @@ def artist_summary(raw: dict[str, Any]) -> ArtistSummary:
     )
 
 
+BIOGRAPHY_EXCERPT_CHARACTERS = 1000
+
+
+def biography_excerpt(text: str) -> tuple[str, bool]:
+    """The longest prefix of at most 1,000 characters ending right after a sentence end, or at
+    the last whitespace when none fits, and whether text was cut (ADR-0036)."""
+    if len(text) <= BIOGRAPHY_EXCERPT_CHARACTERS:
+        return text, False
+    window = text[:BIOGRAPHY_EXCERPT_CHARACTERS]
+    sentence_end = max(window.rfind(mark) for mark in ".!?")
+    if sentence_end >= 0:
+        return window[: sentence_end + 1], True
+    whitespace = max(window.rfind(space) for space in " \t\n")
+    return (window[:whitespace] if whitespace > 0 else window), True
+
+
 def artist_detail(
-    raw: dict[str, Any], *, full_biography: bool, limit: int, offset: int
+    raw: dict[str, Any], releases: dict[str, Any], *, full_biography: bool, limit: int, offset: int
 ) -> ArtistDetail:
+    """An artist from `artist/page`, with releases from `artist/getReleasesList` (ADR-0036)."""
     biography = raw.get("biography")
-    biography = biography if isinstance(biography, dict) else {}
+    content = biography.get("content") if isinstance(biography, dict) else None
+    truncated = False
+    if isinstance(content, str) and not full_biography:
+        content, truncated = biography_excerpt(content)
     return ArtistDetail(
-        **artist_summary(raw).model_dump(),
-        biography_summary=biography.get("summary"),
-        biography=biography.get("content") if full_biography else None,
+        **current_artist_summary(raw).model_dump(),
+        biography=content if isinstance(content, str) else None,
+        biography_truncated=truncated,
         albums=Page[AlbumSummary](
-            **page_fields(raw.get("albums"), album_summary, limit=limit, offset=offset)
+            **page_fields(releases, current_album_summary, limit=limit, offset=offset)
         ),
     )
 
