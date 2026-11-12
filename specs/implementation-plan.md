@@ -39,7 +39,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
 - [x] **7. API client and error mapping**
   Delivers: AC-SETUP-06, AC-BEH-13.
   Done when: the criteria are covered and all checks pass.
-- [ ] **8. MCP server and catalog tools**
+- [x] **8. MCP server and catalog tools**
   Delivers: AC-SETUP-08, AC-SETUP-09, AC-BEH-02, AC-BEH-03, AC-BEH-04, AC-BEH-05, AC-BEH-06, AC-BEH-07, AC-BEH-08, AC-BEH-10, AC-BEH-11, AC-BEH-12, AC-BEH-14, AC-CAT-01, AC-CAT-02, AC-CAT-03, AC-CAT-04, AC-LIVE-02, AC-LIVE-03.
   Done when: the criteria are covered and all checks pass.
 - [ ] **9. Library read tools**

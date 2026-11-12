@@ -109,6 +109,15 @@ class QobuzClient:
             {"type": category, "genre_ids": genre_id, "limit": limit, "offset": offset},
         )
 
+    async def list_featured_playlists(
+        self, genre_id: int | None, *, limit: int, offset: int
+    ) -> dict[str, Any]:
+        # The API ignores `type`, but the web player always sends it.
+        return await self.get(
+            "playlist/getFeatured",
+            {"type": "editor-picks", "genre_ids": genre_id, "limit": limit, "offset": offset},
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
