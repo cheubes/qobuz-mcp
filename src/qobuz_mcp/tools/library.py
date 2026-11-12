@@ -1,6 +1,7 @@
 from typing import Annotated, Literal
 
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from pydantic import Field
 
 from qobuz_mcp.models import (
@@ -10,18 +11,24 @@ from qobuz_mcp.models import (
     Page,
     PlaylistSummary,
     TrackSummary,
+    WriteResult,
     album_summary,
     artist_summary,
     favorited_at,
     page_fields,
     playlist_summary,
     track_summary,
+    write_result,
 )
 from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
 
 FavoriteType = Literal["albums", "artists", "tracks"]
 PlaylistFilter = Literal["owned", "followed"]
 PurchaseType = Literal["albums", "tracks"]
+
+AlbumIds = Annotated[list[str], Field(description="Qobuz album IDs (strings).")]
+ArtistIds = Annotated[list[int], Field(description="Qobuz artist IDs (integers).")]
+TrackIds = Annotated[list[int], Field(description="Qobuz track IDs (integers).")]
 
 _QOBUZ_PLAYLIST_FILTERS: dict[PlaylistFilter, str] = {"owned": "owner", "followed": "subscriber"}
 
@@ -114,3 +121,20 @@ async def list_purchases(
             return Page[TrackSummary](
                 **page_fields(group, track_summary, limit=limit, offset=offset)
             )
+
+
+def _require_ids(album_ids: list[str], artist_ids: list[int], track_ids: list[int]) -> None:
+    if not (album_ids or artist_ids or track_ids):
+        raise ToolError("Give at least one album, artist or track ID.")
+
+
+async def add_favorites(
+    ctx: Context,
+    album_ids: AlbumIds | None = None,
+    artist_ids: ArtistIds | None = None,
+    track_ids: TrackIds | None = None,
+) -> WriteResult:
+    """Add albums, artists and/or tracks to the user's favorites, in one call."""
+    albums, artists, tracks = album_ids or [], artist_ids or [], track_ids or []
+    _require_ids(albums, artists, tracks)
+    return write_result(await qobuz(ctx).add_favorites(albums, artists, tracks))

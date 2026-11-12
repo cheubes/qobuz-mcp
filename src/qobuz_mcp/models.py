@@ -9,6 +9,14 @@ from pydantic import BaseModel
 OPEN_QOBUZ_URL = "https://open.qobuz.com"
 
 
+class WriteResult(BaseModel):
+    status: str
+
+
+def write_result(raw: dict[str, Any]) -> WriteResult:
+    return WriteResult(status=str(raw.get("status", "unknown")))
+
+
 def public_url(kind: str, item_id: str | int) -> str:
     return f"{OPEN_QOBUZ_URL}/{kind}/{item_id}"
 
