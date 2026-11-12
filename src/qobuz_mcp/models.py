@@ -209,6 +209,20 @@ def page_fields(
     }
 
 
+def fixed_page_fields(
+    raw_items: Any, mapper: Callable[[dict[str, Any]], BaseModel]
+) -> dict[str, Any]:
+    """Fields of a `Page` holding a whole fixed list, such as a radio (ADR-0032)."""
+    items = [mapper(raw) for raw in raw_items or []]
+    return {
+        "items": items,
+        "has_more": False,
+        "total": len(items),
+        "limit": len(items),
+        "offset": 0,
+    }
+
+
 def _ref[R: ArtistRef | LabelRef | GenreRef | OwnerRef](model: type[R], raw: Any) -> R | None:
     if not isinstance(raw, dict) or raw.get("id") is None or raw.get("name") is None:
         return None

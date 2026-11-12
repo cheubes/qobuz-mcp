@@ -81,7 +81,7 @@ A tool marked `(planned)` after its name is specified but not exposed yet. The p
 | `list_genres` | Genre tree, one level at a time | `parent_genre_id` (optional), `limit`, `offset` |
 | `list_featured_albums` | Editorial album lists, by category: new releases, press awards, best sellers, most streamed, editor picks, ideal discography, Qobuzissimes, album of the week and the other categories Qobuz accepts | `category`, `genre_id` (optional), `limit`, `offset` |
 | `list_featured_playlists` | Editorial playlists, optionally for one genre or one tag | `genre_id` (optional), `tag` (optional), `limit`, `offset` |
-| `list_similar_albums` (planned) | Albums similar to a given album, as one list of up to 30 | `album_id` |
+| `list_similar_albums` | Albums similar to a given album, as one list of up to 30 | `album_id` |
 | `get_radio` (planned) | Tracks of a radio seeded by an album, an artist or a track, as one list of up to 30 | `seed_type` (`album`, `artist` or `track`), `seed_id` |
 | `suggest_tracks` (planned) | Tracks to continue a list of tracks, for example to extend a playlist. The given tracks are not suggested | `track_ids` (1 to 10), `limit` |
 | `list_artist_playlists` (planned) | Editorial playlists featuring an artist | `artist_id`, `limit`, `offset` |

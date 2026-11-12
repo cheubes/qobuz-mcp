@@ -124,6 +124,12 @@ class FakeQobuz:
                 for group in SEARCH_TYPES
             }
             return httpx2.Response(200, json=payload)
+        if endpoint == "album/suggest":
+            if request.url.params["album_id"] != ALBUM["id"]:
+                return httpx2.Response(404, json={"status": "error", "code": 404})
+            return httpx2.Response(
+                200, json={"algorithm": "synthetic", "albums": {"limit": 30, **LABEL_ALBUMS}}
+            )
         if endpoint == "album/get":
             if request.url.params["album_id"] != ALBUM["id"]:
                 return httpx2.Response(404, json={"status": "error", "code": 404})

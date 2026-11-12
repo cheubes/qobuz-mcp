@@ -16,6 +16,7 @@ READ_ONLY_ENDPOINTS = frozenset(
     {
         "catalog/search",
         "album/get",
+        "album/suggest",
         "track/get",
         "artist/page",
         "artist/getReleasesList",
