@@ -65,8 +65,10 @@ Replace `/path/to/qobuz-mcp` with the absolute path of your clone.
 **Claude Code:**
 
 ```sh
-claude mcp add qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
+claude mcp add --scope user qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
 ```
+
+`--scope user` makes the server available in every Claude Code session. Without it, the server is only registered for the directory where you ran the command.
 
 **Claude Desktop:** add the server to `~/Library/Application Support/Claude/claude_desktop_config.json`, then restart Claude Desktop. Claude Desktop does not inherit your shell `PATH`, so `command` must be the absolute path to `uv`, as printed by `which uv` (`/opt/homebrew/bin/uv` on Apple silicon, `/usr/local/bin/uv` on Intel Macs):
 
