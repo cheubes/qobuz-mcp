@@ -7,8 +7,9 @@ A local MCP server for macOS that lets an AI assistant, such as Claude Desktop o
 ## What it will do
 
 - Search and browse the catalog: albums, artists, tracks, playlists, labels, genres.
-- Browse editorial content: new releases, press awards, best sellers, editorial playlists.
-- Read your library: favorites, playlists you own or follow, purchases.
+- Recommend music: similar albums, radios from an album, an artist or a track, suggestions to extend a list of tracks.
+- Browse editorial content: new releases, press awards, best sellers, album of the week, editorial playlists, awards, magazine stories.
+- Read your library: favorites, playlists you own or follow, purchases, new releases from your favorite artists, and whether given items are in your library.
 - Change your library: add or remove favorites, create, edit, reorder and delete playlists, follow or unfollow playlists.
 
 It will not control playback, and it will not download or stream audio.
