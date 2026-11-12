@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from fastmcp import Context
 from pydantic import Field
@@ -340,5 +340,48 @@ async def get_radio(
     return Page[TrackSummary](
         **fixed_page_fields(
             tracks.get("items") if isinstance(tracks, dict) else None, current_track_summary
+        )
+    )
+
+
+def _suggestion_seed(track: dict[str, Any]) -> dict[str, int]:
+    """What `dynamic/suggest` needs to know about a track, `0` standing for a missing ID."""
+    album = track.get("album") or {}
+
+    def id_of(value: Any) -> int:
+        return value["id"] if isinstance(value, dict) and isinstance(value.get("id"), int) else 0
+
+    return {
+        "track_id": track["id"],
+        "artist_id": id_of(track.get("performer")),
+        "label_id": id_of(album.get("label")),
+        "genre_id": id_of(album.get("genre")),
+    }
+
+
+async def suggest_tracks(
+    ctx: Context,
+    track_ids: Annotated[
+        list[int],
+        Field(
+            min_length=1,
+            max_length=10,
+            description="1 to 10 Qobuz track IDs to continue, such as the end of a playlist.",
+        ),
+    ],
+    limit: Limit = DEFAULT_LIMIT,
+) -> Page[TrackSummary]:
+    """Suggest tracks to continue a list of tracks, for example to extend a playlist.
+
+    The given tracks are never suggested. The result is one complete page of up to `limit`
+    tracks, with no further pages.
+    """
+    client = qobuz(ctx)
+    seeds = [_suggestion_seed(await client.get_track(track_id)) for track_id in track_ids]
+    payload = await client.suggest_tracks(seeds, limit=limit)
+    tracks = payload.get("tracks")
+    return Page[TrackSummary](
+        **fixed_page_fields(
+            tracks.get("items") if isinstance(tracks, dict) else None, track_summary
         )
     )

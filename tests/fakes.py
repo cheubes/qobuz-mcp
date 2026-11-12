@@ -91,6 +91,7 @@ class FakeQobuz:
     valid_tokens: set[str] = field(default_factory=lambda: {FAKE_TOKEN})
     api_responses: dict[str, httpx2.Response] = field(default_factory=dict)
     track: dict[str, Any] = field(default_factory=lambda: dict(TRACK))
+    other_tracks: dict[int, dict[str, Any]] = field(default_factory=dict)
     requests: list[httpx2.Request] = field(default_factory=list)
 
     def handle(self, request: httpx2.Request) -> httpx2.Response:
@@ -138,9 +139,16 @@ class FakeQobuz:
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=ALBUM)
         if endpoint == "track/get":
-            if request.url.params["track_id"] != str(TRACK["id"]):
+            track_id = int(request.url.params["track_id"])
+            if track_id in self.other_tracks:
+                return httpx2.Response(200, json=self.other_tracks[track_id])
+            if track_id != TRACK["id"]:
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=self.track)
+        if endpoint == "dynamic/suggest":
+            return httpx2.Response(
+                200, json={"algorithm": "synthetic", "tracks": {"limit": 3, "items": [TRACK]}}
+            )
         if endpoint == "playlist/get":
             if request.url.params["playlist_id"] != str(PLAYLIST["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})

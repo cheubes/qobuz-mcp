@@ -255,6 +255,16 @@ class QobuzClient:
     async def get_radio(self, seed_type: str, seed_id: str) -> dict[str, Any]:
         return await self.get(f"radio/{seed_type}", {f"{seed_type}_id": seed_id})
 
+    async def suggest_tracks(self, seeds: list[dict[str, int]], *, limit: int) -> dict[str, Any]:
+        return await self.post_json(
+            "dynamic/suggest",
+            {
+                "limit": limit,
+                "listened_tracks_ids": [seed["track_id"] for seed in seeds],
+                "track_to_analysed": seeds,
+            },
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
@@ -285,8 +295,17 @@ class QobuzClient:
         """Write endpoint: POST with a form-encoded body, as the web player does."""
         return await self._request("POST", endpoint, encode_params(params), authenticated=True)
 
+    async def post_json(self, endpoint: str, body: dict[str, Any]) -> dict[str, Any]:
+        """POST with a JSON body, as the web player sends `dynamic/suggest`, a read."""
+        return await self._request("POST", endpoint, {}, authenticated=True, json_body=body)
+
     async def _request(
-        self, method: str, endpoint: str, params: dict[str, str], authenticated: bool
+        self,
+        method: str,
+        endpoint: str,
+        params: dict[str, str],
+        authenticated: bool,
+        json_body: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         headers = {"X-App-Id": self._app_id}
         if authenticated:
@@ -297,6 +316,8 @@ class QobuzClient:
         try:
             if method == "GET":
                 response = await self._http.get(url, params=params, headers=headers)
+            elif json_body is not None:
+                response = await self._http.post(url, json=json_body, headers=headers)
             else:
                 response = await self._http.post(url, data=params, headers=headers)
         except httpx2.HTTPError as error:
