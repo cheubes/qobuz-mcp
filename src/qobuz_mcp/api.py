@@ -165,6 +165,26 @@ class QobuzClient:
             },
         )
 
+    async def update_playlist(
+        self,
+        playlist_id: int,
+        *,
+        name: str | None,
+        description: str | None,
+        is_public: bool | None,
+        is_collaborative: bool | None,
+    ) -> dict[str, Any]:
+        return await self.post(
+            "playlist/update",
+            {
+                "playlist_id": playlist_id,
+                "name": name,
+                "description": description,
+                "is_public": is_public,
+                "is_collaborative": is_collaborative,
+            },
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
@@ -240,6 +260,11 @@ def _error_for(response: httpx2.Response, endpoint: str, params: dict[str, str])
             "Qobuz rejected the app_id. Run `qobuz-mcp login` again, or set QOBUZ_APP_ID."
         )
     if status == 403:
+        if "playlist_id" in params:
+            return ForbiddenError(
+                f"Qobuz refused {endpoint} for playlist_id={params['playlist_id']}: "
+                "the playlist is not owned by the user."
+            )
         return ForbiddenError(f"Qobuz refused {endpoint} for {requested_ids(params)}.")
     if status == 404:
         return NotFoundError(f"Qobuz found nothing for {requested_ids(params)}.")
