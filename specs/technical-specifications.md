@@ -150,9 +150,9 @@ Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised 
 - Base URL: `https://www.qobuz.com/api.json/0.2/`.
 - Headers on every call: `X-App-Id`, and `X-User-Auth-Token` for authenticated calls.
 - Timeout: 15 seconds.
-- Generic `get` and `post` methods handle parameter encoding, headers and error mapping. One method per endpoint builds on them, returning the parsed JSON. Each endpoint method is added with the tool that uses it (implementation plan, steps 8 to 10). Mapping to output models happens in `models.py`, not in the client.
+- Generic `get`, `post` and `post_json` methods handle parameter encoding, headers and error mapping. One method per endpoint builds on them, returning the parsed JSON. Each endpoint method is added with the tool that uses it (implementation plan, steps 8 to 14). Mapping to output models happens in `models.py`, not in the client.
 - No client-side cache, no retry, no throttling.
-- Reads are `GET` with query parameters. Writes are `POST` with an `application/x-www-form-urlencoded` body, as the web player does.
+- Reads are `GET` with query parameters. Writes are `POST` with an `application/x-www-form-urlencoded` body, as the web player does. One read, `dynamic/suggest`, is a `POST` with a JSON body, as the web player sends it (ADR-0031).
 - ID lists are sent comma-separated (`track_ids=1,2,3`). Booleans are sent as `true` or `false`.
 - Every catalog endpoint requires the token, including `catalog/search`.
 - No specific `User-Agent` is required. The HTTP client's default is kept.
@@ -172,7 +172,7 @@ All inherit from `QobuzError`. Tool handlers let these propagate. A single conve
 
 ## 8. Endpoint mapping
 
-All endpoints below were called successfully during the proof of concept.
+All endpoints below were called successfully during the proof of concept, or during the read-only probes of the catalog extension (ADR-0031). Endpoints marked "has_more" paginate with `has_more` and give no total (ADR-0032). The "current format" is the album, track and playlist structure of the current web player endpoints (section 10).
 
 | Tool or command | Endpoint | Parameters and notes |
 |---|---|---|
@@ -181,16 +181,27 @@ All endpoints below were called successfully during the proof of concept.
 | `search_catalog` | `catalog/search` | `query`, `type` (`albums`, `artists`, `tracks`, `playlists`), `limit`, `offset`. With `type`, the other result groups come back empty |
 | `get_album` | `album/get` | `album_id`, `limit`, `offset` (for the tracklist; Qobuz returns up to 500 tracks without them). The booklet is in `goodies` |
 | `get_track` | `track/get` | `track_id`. Credits come as one string in `performers` |
-| `get_artist` | `artist/get` | `artist_id`, `extra=albums`, `limit`, `offset` |
+| `get_artist` | `artist/page`, then `artist/getReleasesList` | `artist/page`: `artist_id`, `sort=relevant`. It gives the name (`name.display`) and the biography (`biography.content`, simple HTML). `artist/getReleasesList`: `artist_id`, `release_type` (optional), `sort=release_date`, `limit`, `offset`, has_more, current format. `release_type` values: `album` observed; `live`, `compilation`, `epSingle` and `other`, the release groups of `artist/page`, assumed. The result without `release_type` is confirmed at implementation (ADR-0036) |
 | `get_similar_artists` | `artist/getSimilarArtists` | `artist_id`, `limit`, `offset` |
-| `get_label` | `label/get` | `label_id`, `extra=albums`, `limit`, `offset` |
+| `get_label` | `label/page`, then `label/getAlbums` | `label/page`: `label_id`. It gives the name and description. `label/getAlbums`: `label_id`, `limit`, `offset`, has_more, current format (ADR-0034) |
 | `get_playlist` | `playlist/get` | `playlist_id`, `extra=tracks`, `limit`, `offset`. Entries carry `playlist_track_id` and `position` |
 | `list_genres` | `genre/list` | `parent_id` (optional), `limit`, `offset`. Qobuz's `path` lists the genre itself, then its ancestors up to the root |
-| `list_featured_albums` | `album/getFeatured` | `type`, `genre_ids` (optional), `limit`, `offset`. Accepted `type` values, as listed by the API: `new-releases`, `new-releases-full`, `recent-releases`, `press-awards`, `best-sellers`, `most-streamed`, `editor-picks`, `most-featured`, `ideal-discography`, `qobuzissims`, `harmonia-mundi`, `universal-classic`, `universal-jazz`, `universal-jeunesse`, `universal-chanson` |
-| `list_featured_playlists` | `playlist/getFeatured` | `type=editor-picks` (sent as the web player does, but ignored by the API), `genre_ids` (optional), `limit`, `offset` |
+| `list_featured_albums` | `discover/*` or `album/getFeatured`, by category (ADR-0035) | Categories `new-releases`, `qobuzissims`, `ideal-discography`, `most-streamed`, `press-awards` and `album-of-the-week` go to `discover/newReleases`, `discover/qobuzissims`, `discover/idealDiscography`, `discover/mostStreamed`, `discover/pressAward` and `discover/albumOfTheWeek`: `genre_ids` (optional), `limit`, `offset`, has_more, current format. `genre_ids` observed on `discover/newReleases`, assumed on the others. The other categories go to `album/getFeatured`: `type`, `genre_ids` (optional), `limit`, `offset`. Its other accepted `type` values, as listed by the API: `new-releases-full`, `recent-releases`, `best-sellers`, `editor-picks`, `most-featured`, `harmonia-mundi`, `universal-classic`, `universal-jazz`, `universal-jeunesse`, `universal-chanson` |
+| `list_featured_playlists` | `discover/playlists` | `genre_ids` (optional), `tags` (optional: one of the slugs listed in ADR-0033), `limit`, `offset`, has_more, current format |
+| `list_similar_albums` | `album/suggest` | `album_id`. Returns 30 albums in `albums.items`, current format |
+| `get_radio` | `radio/album`, `radio/artist` or `radio/track`, by `seed_type` | `album_id`, `artist_id` or `track_id`. Returns 30 tracks in `tracks.items`, current format |
+| `suggest_tracks` | `track/get` for each given track, then `dynamic/suggest` | `track/get` gives each track's `performer.id`, `album.label.id` and `album.genre.id`. `dynamic/suggest` is a `POST` with the JSON body `{"limit", "listened_tracks_ids", "track_to_analysed"}`: `listened_tracks_ids` holds the given track IDs, which are then not suggested, and `track_to_analysed` holds one `{"track_id", "artist_id", "label_id", "genre_id"}` object per given track, with `0` for a missing ID, as the web player does. Returns `tracks.items` in the `track/get` format |
+| `list_artist_playlists` | `artist/playlists` | `artist_id`, `limit`, `offset`, has_more, current format |
+| `list_label_items` | `label/getTopArtists`, `label/getNextReleases`, `label/getPlaylists` or `label/getAwardedReleases`, by `section` (`top_artists`, `upcoming_releases`, `playlists`, `awarded_releases`) | `label_id`, `limit`, `offset`, has_more, current format. Top artists carry only `id`, `name` and an image |
+| `list_awards` | `award/explore` | `limit`, `offset`, has_more. Items carry `id`, `name` and `magazine.name` |
+| `get_award` | `award/page`, then `award/getAlbums` | `award/page`: `award_id`. It gives the name. `award/getAlbums`: `award_id`, `genre_ids` (optional), `limit`, `offset`, has_more, current format |
+| `search_stories` | `story/search` | `query`, `limit`, `offset`. The page is under `stories`, with a `total` |
+| `list_related_stories` | `album/story`, `artist/story`, `label/story`, `playlist/story` or `award/story`, by `entity_type` | `album_id`, `artist_id`, `label_id`, `playlist_id` or `award_id`, `limit`, `offset`, has_more. `playlist/story` is assumed to match the others: not observed |
 | `list_favorites` | `favorite/getUserFavorites` | `type` (`albums`, `artists`, `tracks`), `limit`, `offset` |
 | `list_my_playlists` | `playlist/getUserPlaylists` | `filter` (`owner` or `subscriber`, mapped from `owned` and `followed`; omitted for both), `limit`, `offset` |
 | `list_purchases` | `purchase/getUserPurchases` | `type` (`albums`, `tracks`), `limit`, `offset`. No signature needed |
+| `list_new_releases_from_favorites` | `favorite/getNewReleases` | `type` (`artists`, `labels`, `awards`, from `source`), `genre_ids` (optional), `limit`, `offset`, has_more, current format |
+| `check_library` | `favorite/getUserFavoriteIds`, then `purchase/getUserPurchasesIds` | No parameter. Favorites come as ID lists under `albums` (strings), `artists` and `tracks` (integers), all in one response: thousands of IDs observed. Purchases come under `albums.items` and `tracks.items`, each with a `total`, alongside a `user` object holding the account login, which is dropped (FS-BEH-3). The purchase item structure is not observed, since the account has no purchase: items are accepted as IDs or as objects with an `id`. Whether purchases are paginated is not observed either |
 | `add_favorites` | `favorite/create` | `album_ids`, `artist_ids`, `track_ids` |
 | `remove_favorites` | `favorite/delete` | `album_ids`, `artist_ids`, `track_ids` |
 | `create_playlist` | `playlist/create` | `name`, `description`, `is_public`, `is_collaborative` |
@@ -211,8 +222,8 @@ All endpoints below were called successfully during the proof of concept.
 - A result typed as a union of models, such as `search_catalog`'s, is wrapped by FastMCP in a `result` object.
 - Each tool is an async function with typed parameters and a pydantic return type. FastMCP derives the input schema, the output schema and structured content from them.
 - Annotations follow FS section 5. All tools also set `openWorldHint: true`.
-- Pagination follows FS-BEH-1; `offset` defaults to 0. List results use a generic `Page[T]` model: `items`, `total`, `limit`, `offset`.
-- Public URLs are built in `models.py`: `https://open.qobuz.com/{album|artist|track|playlist|label}/{id}`.
+- Pagination follows FS-BEH-1; `offset` defaults to 0. List results use a generic `Page[T]` model: `items`, `has_more`, `total`, `limit`, `offset` (ADR-0032).
+- Public URLs are built in `models.py`: `https://open.qobuz.com/{album|artist|track|playlist|label}/{id}`, and `https://play.qobuz.com/{award|story}/{id}`, the web player routes `award/:awardId` and `story/:id`, for awards and stories.
 - Server instructions (FS-BEH-5): one constant in `server.py`, passed to the FastMCP instance. It is static text: no content returned by Qobuz is ever interpolated into it or into tool descriptions (FS-BEH-4).
 - `create_playlist` sends `is_public` and `is_collaborative` explicitly, `false` unless the caller set them (FS 5.3).
 - Logging: standard `logging` to stderr only, since stdout carries the MCP protocol. Level `INFO`. The HTTP stack's loggers (`httpx2` and its transport layer, exact names confirmed at implementation) are capped at `WARNING`, so request details never reach the logs.
@@ -224,18 +235,18 @@ Tool results are pydantic models in `models.py`. They are the contract the assis
 ### Conventions
 
 - IDs keep Qobuz's types: album IDs are strings, all other IDs are integers.
-- Every catalog model carries `id` and `url`, the public `https://open.qobuz.com/<kind>/<id>` URL (FS-BEH-1).
+- Every catalog model carries `id` and `url`, its public URL (FS-BEH-1, section 9).
 - Dates are ISO 8601 strings: `YYYY-MM-DD` for release dates, UTC date-times for Qobuz timestamps.
 - Durations are in seconds, in fields named `duration_seconds`.
 - Optional fields are `None` when Qobuz omits them or sends `null`.
-- Third-party text fields (names, descriptions, biographies, editorial texts, credits) are returned as plain strings, unmodified (FS-BEH-4).
+- Third-party text fields (names, descriptions, biographies, editorial texts, credits) are returned as plain strings, unmodified (FS-BEH-4). The only exception is the default artist biography, an exact prefix of Qobuz's text (ADR-0036).
 - No image URLs: the assistant cannot use them, and they cost context.
 
 ### Shared models
 
 | Model | Fields | Source |
 |---|---|---|
-| `Page[T]` | `items: list[T]`, `total`, `limit`, `offset` | Qobuz page objects. The `artists` group of `catalog/search` has no `limit` or `offset`, which are then filled from the request |
+| `Page[T]` | `items: list[T]`, `has_more: bool`, `total: int \| None`, `limit`, `offset` | Qobuz page objects. The `artists` group of `catalog/search` has no `limit` or `offset`, which are then filled from the request, as for every page that omits them. `has_more` is Qobuz's when sent, `offset + len(items) < total` otherwise. `total` is `None` when Qobuz gives none. A fixed list, such as a radio, is one complete page: `total` is its length, `has_more` is `false`, `offset` is 0 and `limit` is its length (ADR-0032) |
 | `ArtistRef` | `id`, `name` | `artist`, `performer`, `composer` objects |
 | `ArtistCredit` | `id`, `name`, `roles: list[str]` | `album/get` `artists[]` |
 | `LabelRef` | `id`, `name` | `label` objects |
@@ -249,16 +260,21 @@ Tool results are pydantic models in `models.py`. They are the contract the assis
 
 | Model | Used by | Fields |
 |---|---|---|
-| `AlbumSummary` | search, artist and label discographies, featured albums, favorites, purchases | `id: str`, `url`, `title`, `version`, `artist: ArtistRef`, `release_date`, `tracks_count`, `duration_seconds`, `genre: GenreRef`, `label: LabelRef`, `audio_quality: AudioQuality`, `parental_warning`, `streamable` |
+| `AlbumSummary` | search, artist and label discographies, featured and similar albums, award albums, label sections, new releases from favorites, favorites, purchases | `id: str`, `url`, `title`, `version`, `artist: ArtistRef`, `release_date`, `tracks_count`, `duration_seconds`, `genre: GenreRef`, `label: LabelRef`, `audio_quality: AudioQuality`, `parental_warning`, `streamable` |
 | `AlbumDetail` | `get_album` | `AlbumSummary` fields, plus `artists: list[ArtistCredit]`, `composer: ArtistRef`, `release_type`, `description`, `awards: list[Award]`, `booklets: list[Booklet]`, `copyright`, `upc`, `tracks: Page[TrackSummary]` |
 | `Award` | `AlbumDetail` | `name`, `publication_name`, `awarded_at` |
 | `Booklet` | `AlbumDetail` | `name`, `url` (from `goodies[]`) |
-| `TrackSummary` | search, album tracklist, playlist entries, favorites, purchases | `id: int`, `url`, `title`, `version`, `performer: ArtistRef`, `album: AlbumRef`, `track_number`, `media_number`, `duration_seconds`, `audio_quality: AudioQuality`, `parental_warning`, `streamable` |
+| `TrackSummary` | search, album tracklist, playlist entries, radios, track suggestions, favorites, purchases | `id: int`, `url`, `title`, `version`, `performer: ArtistRef`, `album: AlbumRef`, `track_number`, `media_number`, `duration_seconds`, `audio_quality: AudioQuality`, `parental_warning`, `streamable` |
 | `TrackDetail` | `get_track` | `TrackSummary` fields, plus `composer: ArtistRef`, `work`, `credits` (the raw `performers` string, not parsed: its format is not documented), `isrc`, `copyright`, `release_date` |
-| `ArtistSummary` | search, similar artists, favorites | `id: int`, `url`, `name`, `albums_count` |
-| `ArtistDetail` | `get_artist` | `ArtistSummary` fields, plus `biography_summary` (from `biography.summary`, about 450 characters), `biography` (from `biography.content`, 2,000 to 12,000 characters observed: only when `full_biography` is `true`, `None` otherwise), `albums: Page[AlbumSummary]` |
+| `ArtistSummary` | search, similar artists, label top artists, favorites | `id: int`, `url`, `name`, `albums_count` |
+| `ArtistDetail` | `get_artist` | `ArtistSummary` fields, `albums_count` being `None` since `artist/page` does not provide it, plus `biography`, `biography_truncated: bool`, `albums: Page[AlbumSummary]`. `biography` comes from `biography.content`, simple HTML of up to about 12,000 characters observed. By default, it is the longest prefix of at most 1,000 characters that ends right after a `.`, `!` or `?`, or at the last whitespace when none fits, and `biography_truncated` is `true` when text was cut. With `full_biography`, it is the full text and `biography_truncated` is `false`. `None` and `false` when Qobuz has no biography (ADR-0036) |
 | `LabelDetail` | `get_label` | `id: int`, `url`, `name`, `description`, `albums: Page[AlbumSummary]` |
-| `PlaylistSummary` | search, featured playlists, user playlists, playlist writes | `id: int`, `url`, `name`, `description`, `owner: OwnerRef`, `tracks_count`, `duration_seconds`, `is_public`, `is_collaborative`, `updated_at` |
+| `AwardSummary` | `list_awards` | `id: int`, `url`, `name`, `publication_name` (from `magazine.name`) |
+| `AwardDetail` | `get_award` | `id: int`, `url`, `name`, `albums: Page[AlbumSummary]` |
+| `StorySummary` | `search_stories`, `list_related_stories` | `id: str`, `url`, `title`, `summary` (from `description_short`), `authors: list[str]` (author names), `published_at` (from `display_date`, Unix seconds), `sections: list[str]` (from `section_slugs`, such as `/news`) |
+| `ItemStatus` | `check_library` | `id` (string for albums, integer otherwise), `favorite: bool`, `purchased: bool \| None` (`None` for artists, which cannot be purchased) |
+| `LibraryStatus` | `check_library` | `albums`, `artists`, `tracks`: each a `list[ItemStatus]`, in the order of the given IDs |
+| `PlaylistSummary` | search, featured, artist and label playlists, user playlists, playlist writes | `id: int`, `url`, `name`, `description`, `owner: OwnerRef`, `tracks_count`, `duration_seconds`, `is_public`, `is_collaborative`, `updated_at` |
 | `PlaylistDetail` | `get_playlist` | `PlaylistSummary` fields, plus `genres: list[GenreRef]`, `entries: Page[PlaylistEntry]` |
 | `PlaylistEntry` | `PlaylistDetail` | `playlist_track_id`, `position`, `track: TrackSummary` |
 | `Genre` | `list_genres` | `id`, `name`, `path: list[int]` (IDs of the ancestor genres, from the root to the direct parent, empty for a top-level genre) |
@@ -268,6 +284,14 @@ Tool results are pydantic models in `models.py`. They are the contract the assis
 | Tool | Result |
 |---|---|
 | `search_catalog` | `Page` of the model matching `type`: `AlbumSummary`, `ArtistSummary`, `TrackSummary` or `PlaylistSummary` |
+| `list_similar_albums`, `list_new_releases_from_favorites` | `Page[AlbumSummary]` |
+| `get_radio`, `suggest_tracks` | `Page[TrackSummary]`. `suggest_tracks` returns one complete page of up to `limit` tracks |
+| `list_artist_playlists` | `Page[PlaylistSummary]` |
+| `list_label_items` | `Page` of the model matching `section`: `ArtistSummary` for `top_artists`, `PlaylistSummary` for `playlists`, `AlbumSummary` otherwise |
+| `list_awards` | `Page[AwardSummary]` |
+| `get_award` | `AwardDetail` |
+| `search_stories`, `list_related_stories` | `Page[StorySummary]` |
+| `check_library` | `LibraryStatus` |
 | `get_album`, `get_track`, `get_artist`, `get_label`, `get_playlist` | The matching detail model |
 | `get_similar_artists` | `Page[ArtistSummary]` |
 | `list_genres` | `Page[Genre]` |
@@ -278,7 +302,18 @@ Tool results are pydantic models in `models.py`. They are the contract the assis
 | `create_playlist`, `update_playlist`, `add_tracks_to_playlist`, `remove_tracks_from_playlist`, `move_playlist_tracks` | `PlaylistSummary`, the playlist's state after the write, as returned by Qobuz |
 | `delete_playlist`, `add_favorites`, `remove_favorites`, `follow_playlist`, `unfollow_playlist` | `WriteResult`: `status`, the value Qobuz returns (`success` when the write succeeded) |
 
-`AlbumDetail.tracks` is one page of the tracklist, paginated like any list (FS-BEH-1). Its `total` tells whether more tracks exist. Tracks inside an album carry no `album` object in Qobuz's answer, so `album` is filled from the album itself.
+`AlbumDetail.tracks` is one page of the tracklist, paginated like any list (FS-BEH-1). Its `has_more` tells whether more tracks exist. Tracks inside an album carry no `album` object in Qobuz's answer, so `album` is filled from the album itself.
+
+### Current web player formats
+
+The current web player endpoints return albums, tracks and playlists in another structure than the endpoints of the proof of concept. They map to the same models:
+
+| Model | Source fields |
+|---|---|
+| `AlbumSummary` | `artist` from `artist` when present, its name in `name.display`, otherwise the first of `artists[]`. `release_date` from `dates.original`. `tracks_count` from `track_count` or `tracks_count`. `audio_quality` from `audio_info`, with `hires` from `rights.hires_streamable`. `streamable` from `rights.streamable` |
+| `TrackSummary` | `performer` from the first of `artists[]`. `track_number` and `media_number` from `physical_support`. `audio_quality` and `streamable` as for albums. `album` from `album` |
+| `PlaylistSummary` | `name` from `name`, or `title` for `artist/playlists`. `is_public` and `is_collaborative` are `None`: editorial playlists do not carry them |
+| `ArtistSummary` | `name` from `name`, or `name.display`. `albums_count` is `None` |
 
 ## 11. Development commands
 
@@ -334,7 +369,7 @@ Claude Desktop (`claude_desktop_config.json`). The absolute path to `uv` is requ
   `[retired]` criteria are otherwise ignored.
 - Unit tests use an in-memory `keyring` backend (`tests/memory_keyring.py`), selected through the `PYTHON_KEYRING_BACKEND` environment variable set in `tests/conftest.py`. Subprocesses started by tests, such as the stdio server of AC-BEH-12, inherit it, so no unit test ever touches the real Keychain.
 - Live tests select the macOS Keychain backend explicitly in `tests/live/conftest.py`. If no credentials are found, they are skipped with the reason "not logged in: run `qobuz-mcp login`".
-- Live tests never call write endpoints. A request hook on the live `httpx2` client allows only the endpoints of `read-only` tools (FS section 5), `user/get` and the web player pages, and fails the test otherwise (AC-LIVE-05).
+- Live tests never call write endpoints. A request hook on the live `httpx2` client allows only `GET` requests to the endpoints of `read-only` tools (FS section 5), `user/get` and the web player pages, and fails the test otherwise (AC-LIVE-05). `dynamic/suggest` is a `POST`, so the hook blocks it: `suggest_tracks` has no live test (ADR-0031).
 - `pytest -m "not live"` excludes them.
 - Fixtures are synthetic: hand-written minimal JSON reproducing the structure of real responses observed during the proof of concept, with fake IDs, names and texts. The web player HTML and bundle fixtures are small invented snippets containing only the patterns searched for and a fake `app_id`. No real API response, Qobuz file or account data is ever committed (ADR-0023).
 

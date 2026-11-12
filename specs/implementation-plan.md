@@ -49,7 +49,23 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   The AC-BEH-11 tests from step 8 are extended to the AC-BEH-09 error case.
   Delivers: AC-BEH-01, AC-BEH-09, AC-LIB-02, AC-LIB-03, AC-PL-01, AC-PL-02, AC-PL-03, AC-PL-04, AC-PL-05, AC-PL-06, AC-PL-07.
   Done when: the criteria are covered, all checks pass, and the full tool catalog of the functional specifications is exposed.
-- [ ] **11. README usage sections**
+- [ ] **11. Pagination and current web player formats**
+  `Page` gains `has_more` and an optional `total` (ADR-0032), the server instructions point to `has_more`, and `models.py` maps the current web player formats. The AC-BEH-02 and AC-BEH-14 tests from step 8 are extended to `has_more`.
+  Delivers: AC-BEH-16.
+  Done when: the criterion is covered and all checks pass.
+- [ ] **12. Migrations of existing tools**
+  `list_featured_playlists`, `get_label`, `list_featured_albums` and `get_artist` move to the current web player endpoints (ADR-0033 to ADR-0036), one pull request each. The live test guard allows their new endpoints.
+  Delivers: AC-CAT-05, AC-CAT-06, AC-CAT-07, AC-LIVE-07, AC-LIVE-08.
+  Done when: the criteria are covered, all checks pass, and no migrated tool calls its former endpoint.
+- [ ] **13. New catalog tools**
+  The `(planned)` tools of FS 5.1, one pull request each, each removing its marker. The AC-BEH-04 tests from step 8 are extended to awards and stories.
+  Delivers: AC-CAT-08, AC-CAT-09, AC-CAT-10, AC-CAT-11, AC-LIVE-09.
+  Done when: the criteria are covered, all checks pass, and no tool of FS 5.1 is marked `(planned)`.
+- [ ] **14. New library read tools**
+  The `(planned)` tools of FS 5.2, one pull request each, each removing its marker.
+  Delivers: AC-LIB-06, AC-LIB-07, AC-LIB-08, AC-LIB-09, AC-LIVE-10.
+  Done when: the criteria are covered, all checks pass, and no tool of section 5 is marked `(planned)`.
+- [ ] **15. README usage sections**
   Prerequisites, login, client configuration.
   Delivers: AC-SETUP-11, AC-BEH-15.
   Done when: both manual criteria have been checked by hand with Claude Desktop and Claude Code.
