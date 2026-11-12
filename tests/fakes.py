@@ -147,6 +147,8 @@ class FakeQobuz:
             if request.url.params["label_id"] != str(LABEL["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=LABEL if endpoint == "label/page" else LABEL_ALBUMS)
+        if endpoint.startswith("discover/") and endpoint != "discover/playlists":
+            return httpx2.Response(200, json=LABEL_ALBUMS)
         if endpoint == "album/getFeatured":
             return httpx2.Response(200, json={"albums": SEARCH_RESULTS["albums"]})
         if endpoint == "discover/playlists":
