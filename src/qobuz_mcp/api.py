@@ -212,6 +212,9 @@ class QobuzClient:
             },
         )
 
+    async def delete_playlist(self, playlist_id: int) -> dict[str, Any]:
+        return await self.post("playlist/delete", {"playlist_id": playlist_id})
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",

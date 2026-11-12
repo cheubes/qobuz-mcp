@@ -4,7 +4,7 @@ from fastmcp import Context
 from fastmcp.exceptions import ToolError
 from pydantic import Field
 
-from qobuz_mcp.models import PlaylistSummary, playlist_summary
+from qobuz_mcp.models import PlaylistSummary, WriteResult, playlist_summary, write_result
 from qobuz_mcp.tools.common import qobuz
 
 PlaylistId = Annotated[int, Field(ge=1, description="Qobuz ID of a playlist the user owns.")]
@@ -111,3 +111,11 @@ async def move_playlist_tracks(
     """
     payload = await qobuz(ctx).move_playlist_tracks(playlist_id, playlist_track_ids, insert_before)
     return playlist_summary(payload)
+
+
+async def delete_playlist(ctx: Context, playlist_id: PlaylistId) -> WriteResult:
+    """Delete a playlist the user owns. This cannot be undone.
+
+    To stop following someone else's playlist, use `unfollow_playlist` instead.
+    """
+    return write_result(await qobuz(ctx).delete_playlist(playlist_id))
