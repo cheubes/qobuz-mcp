@@ -1,0 +1,7 @@
+{
+  "has_more": true,
+  "items": [
+    {"id": 6, "name": "Synthetic Award", "image": null, "magazine": {"name": "Synthetic Magazine"}},
+    {"id": 7, "name": "Another Synthetic Award", "image": null, "magazine": null}
+  ]
+}

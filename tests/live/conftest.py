@@ -17,6 +17,7 @@ READ_ONLY_ENDPOINTS = frozenset(
         "catalog/search",
         "album/get",
         "album/suggest",
+        "award/explore",
         "radio/album",
         "radio/artist",
         "radio/track",
