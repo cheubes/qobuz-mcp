@@ -86,6 +86,7 @@ mcp.tool(library.add_favorites, annotations=ADDITIVE)
 mcp.tool(library.remove_favorites, annotations=DESTRUCTIVE)
 mcp.tool(playlists.create_playlist, annotations=ADDITIVE)
 mcp.tool(playlists.update_playlist, annotations=DESTRUCTIVE)
+mcp.tool(playlists.add_tracks_to_playlist, annotations=ADDITIVE)
 
 
 def run() -> None:

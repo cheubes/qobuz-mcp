@@ -55,3 +55,14 @@ async def update_playlist(
         is_collaborative=is_collaborative,
     )
     return playlist_summary(payload)
+
+
+async def add_tracks_to_playlist(
+    ctx: Context,
+    playlist_id: PlaylistId,
+    track_ids: Annotated[
+        list[int], Field(min_length=1, description="Qobuz track IDs, in the order to add them.")
+    ],
+) -> PlaylistSummary:
+    """Append tracks at the end of a playlist the user owns, in the given order."""
+    return playlist_summary(await qobuz(ctx).add_tracks_to_playlist(playlist_id, track_ids))
