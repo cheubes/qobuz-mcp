@@ -9,6 +9,7 @@ from qobuz_mcp.models import (
     AlbumSummary,
     ArtistDetail,
     ArtistSummary,
+    AwardSummary,
     Genre,
     LabelDetail,
     Page,
@@ -20,6 +21,7 @@ from qobuz_mcp.models import (
     album_summary,
     artist_detail,
     artist_summary,
+    award_summary,
     current_album_summary,
     current_artist_summary,
     current_playlist_summary,
@@ -437,3 +439,14 @@ async def list_label_items(
             return Page[AlbumSummary](
                 **page_fields(payload, current_album_summary, limit=limit, offset=offset)
             )
+
+
+async def list_awards(
+    ctx: Context, limit: Limit = DEFAULT_LIMIT, offset: Offset = 0
+) -> Page[AwardSummary]:
+    """List press awards and distinctions, with the publication that grants them.
+
+    Use `get_award` for an award's albums, and `list_related_stories` for its stories.
+    """
+    payload = await qobuz(ctx).list_awards(limit=limit, offset=offset)
+    return Page[AwardSummary](**page_fields(payload, award_summary, limit=limit, offset=offset))

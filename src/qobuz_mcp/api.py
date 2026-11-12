@@ -287,6 +287,9 @@ class QobuzClient:
             {"label_id": label_id, "limit": limit, "offset": offset},
         )
 
+    async def list_awards(self, *, limit: int, offset: int) -> dict[str, Any]:
+        return await self.get("award/explore", {"limit": limit, "offset": offset})
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",

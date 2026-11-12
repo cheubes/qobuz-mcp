@@ -7,6 +7,7 @@ from typing import Any
 from pydantic import BaseModel
 
 OPEN_QOBUZ_URL = "https://open.qobuz.com"
+WEB_PLAYER_URL = "https://play.qobuz.com"
 
 
 class WriteResult(BaseModel):
@@ -19,6 +20,11 @@ def write_result(raw: dict[str, Any]) -> WriteResult:
 
 def public_url(kind: str, item_id: str | int) -> str:
     return f"{OPEN_QOBUZ_URL}/{kind}/{item_id}"
+
+
+def web_player_url(kind: str, item_id: str | int) -> str:
+    """Awards and stories have no open.qobuz.com route: their web player page is used."""
+    return f"{WEB_PLAYER_URL}/{kind}/{item_id}"
 
 
 class Page[T: BaseModel](BaseModel):
@@ -154,6 +160,13 @@ class LabelDetail(BaseModel):
     name: str
     description: str | None
     albums: Page[AlbumSummary]
+
+
+class AwardSummary(BaseModel):
+    id: int
+    url: str
+    name: str
+    publication_name: str | None
 
 
 class Genre(BaseModel):
@@ -517,6 +530,16 @@ def current_artist_summary(raw: dict[str, Any]) -> ArtistSummary:
         url=public_url("artist", raw["id"]),
         name=_display_name(raw["name"]),
         albums_count=None,
+    )
+
+
+def award_summary(raw: dict[str, Any]) -> AwardSummary:
+    magazine = raw.get("magazine")
+    return AwardSummary(
+        id=raw["id"],
+        url=web_player_url("award", raw["id"]),
+        name=raw["name"],
+        publication_name=magazine.get("name") if isinstance(magazine, dict) else None,
     )
 
 

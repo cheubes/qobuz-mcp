@@ -60,3 +60,13 @@ async def test_list_label_items(live_client: Client[Any], section: str) -> None:
     page = result.structured_content["result"]  # type: ignore[index]
     assert isinstance(page["has_more"], bool)
     assert all(item["url"].startswith("https://open.qobuz.com/") for item in page["items"])
+
+
+async def test_list_awards(live_client: Client[Any]) -> None:
+    """AC-LIVE-09"""
+    result = await live_client.call_tool("list_awards", {"limit": 3})
+    page = result.structured_content
+    assert page is not None
+    assert page["items"]
+    award = page["items"][0]
+    assert award["url"] == f"https://play.qobuz.com/award/{award['id']}"
