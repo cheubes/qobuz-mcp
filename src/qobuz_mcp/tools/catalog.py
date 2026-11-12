@@ -97,7 +97,7 @@ async def get_album(
     """Get an album's details: tracklist, audio quality, artists and roles, label, genre,
     release date, description, press awards and booklet links.
 
-    The tracklist is paginated with `limit` and `offset`; `tracks.total` tells whether more
+    The tracklist is paginated with `limit` and `offset`; `tracks.has_more` tells whether more
     tracks exist.
     """
     payload = await qobuz(ctx).get_album(album_id, limit=limit, offset=offset)
@@ -145,7 +145,7 @@ async def get_artist(
 
     The full biography (often several thousand characters) is returned only when
     `full_biography` is true: ask for it when the user wants to know more about the artist.
-    The discography is paginated with `limit` and `offset`; `albums.total` tells whether more
+    The discography is paginated with `limit` and `offset`; `albums.has_more` tells whether more
     albums exist. Use `get_similar_artists` to discover related artists.
     """
     payload = await qobuz(ctx).get_artist(artist_id, limit=limit, offset=offset)
@@ -173,7 +173,7 @@ async def get_label(
 ) -> LabelDetail:
     """Get a record label's description and its albums.
 
-    The albums are paginated with `limit` and `offset`; `albums.total` tells whether more
+    The albums are paginated with `limit` and `offset`; `albums.has_more` tells whether more
     albums exist.
     """
     payload = await qobuz(ctx).get_label(label_id, limit=limit, offset=offset)

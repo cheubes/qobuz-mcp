@@ -23,7 +23,8 @@ def public_url(kind: str, item_id: str | int) -> str:
 
 class Page[T: BaseModel](BaseModel):
     items: list[T]
-    total: int
+    has_more: bool
+    total: int | None
     limit: int
     offset: int
 
@@ -193,11 +194,18 @@ def page_fields(
     schema matches the result."""
     group = group if isinstance(group, dict) else {}
     items = [mapper(raw) for raw in group.get("items") or []]
+    total = group.get("total")
+    total = total if isinstance(total, int) else None
+    offset = group.get("offset", offset)
+    has_more = group.get("has_more")
+    if not isinstance(has_more, bool):
+        has_more = total is not None and offset + len(items) < total
     return {
         "items": items,
-        "total": group.get("total", len(items)),
+        "has_more": has_more,
+        "total": total,
         "limit": group.get("limit", limit),
-        "offset": group.get("offset", offset),
+        "offset": offset,
     }
 
 
@@ -377,6 +385,102 @@ def genre(raw: dict[str, Any]) -> Genre:
     # Qobuz's path starts with the genre itself and climbs to the root.
     ancestors = [genre_id for genre_id in raw.get("path") or [] if genre_id != raw["id"]]
     return Genre(id=raw["id"], name=raw["name"], path=list(reversed(ancestors)))
+
+
+def _display_name(value: Any) -> Any:
+    """Names of the current web player format are either strings or `{"display": ...}`."""
+    return value.get("display") if isinstance(value, dict) else value
+
+
+def _current_artist(raw: dict[str, Any]) -> ArtistRef | None:
+    artist = raw.get("artist")
+    if not isinstance(artist, dict):
+        artists = raw.get("artists") or []
+        artist = artists[0] if artists else None
+    if not isinstance(artist, dict):
+        return None
+    return _ref(ArtistRef, {"id": artist.get("id"), "name": _display_name(artist.get("name"))})
+
+
+def _current_audio_quality(raw: dict[str, Any]) -> AudioQuality:
+    audio = raw.get("audio_info") or {}
+    rights = raw.get("rights") or {}
+    return AudioQuality(
+        bit_depth=audio.get("maximum_bit_depth"),
+        sampling_rate_khz=audio.get("maximum_sampling_rate"),
+        channels=audio.get("maximum_channel_count"),
+        hires=rights.get("hires_streamable"),
+    )
+
+
+def current_album_summary(raw: dict[str, Any]) -> AlbumSummary:
+    """Album of the current web player endpoints (technical specifications, section 10)."""
+    dates = raw.get("dates") or {}
+    rights = raw.get("rights") or {}
+    tracks_count = raw.get("track_count")
+    if tracks_count is None:
+        tracks_count = raw.get("tracks_count")
+    return AlbumSummary(
+        id=str(raw["id"]),
+        url=public_url("album", raw["id"]),
+        title=raw["title"],
+        version=raw.get("version"),
+        artist=_current_artist(raw),
+        release_date=dates.get("original"),
+        tracks_count=tracks_count,
+        duration_seconds=raw.get("duration"),
+        genre=_ref(GenreRef, raw.get("genre")),
+        label=_ref(LabelRef, raw.get("label")),
+        audio_quality=_current_audio_quality(raw),
+        parental_warning=raw.get("parental_warning"),
+        streamable=rights.get("streamable"),
+    )
+
+
+def current_track_summary(raw: dict[str, Any]) -> TrackSummary:
+    """Track of the current web player endpoints (technical specifications, section 10)."""
+    support = raw.get("physical_support") or {}
+    rights = raw.get("rights") or {}
+    return TrackSummary(
+        id=raw["id"],
+        url=public_url("track", raw["id"]),
+        title=raw["title"],
+        version=raw.get("version"),
+        performer=_current_artist(raw),
+        album=_album_ref(raw.get("album")),
+        track_number=support.get("track_number"),
+        media_number=support.get("media_number"),
+        duration_seconds=raw.get("duration"),
+        audio_quality=_current_audio_quality(raw),
+        parental_warning=raw.get("parental_warning"),
+        streamable=rights.get("streamable"),
+    )
+
+
+def current_playlist_summary(raw: dict[str, Any]) -> PlaylistSummary:
+    """Playlist of the current web player endpoints (technical specifications, section 10)."""
+    return PlaylistSummary(
+        id=raw["id"],
+        url=public_url("playlist", raw["id"]),
+        name=raw.get("name") or raw["title"],
+        description=raw.get("description"),
+        owner=_ref(OwnerRef, raw.get("owner")),
+        tracks_count=raw.get("tracks_count"),
+        duration_seconds=raw.get("duration"),
+        is_public=None,
+        is_collaborative=None,
+        updated_at=_timestamp(raw.get("updated_at")),
+    )
+
+
+def current_artist_summary(raw: dict[str, Any]) -> ArtistSummary:
+    """Artist of the current web player endpoints (technical specifications, section 10)."""
+    return ArtistSummary(
+        id=raw["id"],
+        url=public_url("artist", raw["id"]),
+        name=_display_name(raw["name"]),
+        albums_count=None,
+    )
 
 
 def playlist_summary(raw: dict[str, Any]) -> PlaylistSummary:

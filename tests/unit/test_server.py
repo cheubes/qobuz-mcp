@@ -7,7 +7,7 @@ from fastmcp import Client
 
 from qobuz_mcp import server
 from qobuz_mcp.credentials import Credentials, delete_credentials, save_credentials
-from tests.fakes import FAKE_APP_ID, FAKE_TOKEN, SEARCH_TYPES, FakeQobuz
+from tests.fakes import FAKE_APP_ID, FAKE_TOKEN, SEARCH_RESULTS, SEARCH_TYPES, FakeQobuz
 
 pytestmark = pytest.mark.anyio
 
@@ -50,7 +50,7 @@ async def test_instructions_cover_the_required_points(client: Client[Any]) -> No
         "only at the user's request",
         "`playlist_track_id`, not `track_id`",
         "`offset`",
-        "`total`",
+        "`has_more`",
         "Qobuz ID",
         "public `url`",
         "Favorites are listed newest first",
@@ -112,11 +112,37 @@ async def test_default_page_size_and_page_fields(
     assert request.url.params["offset"] == "0"
     assert len(page["items"]) <= 25
     assert (page["total"], page["limit"], page["offset"]) == (57, 2, 0)
+    assert page["has_more"] is True
 
 
 async def test_missing_page_fields_are_filled_from_the_request(client: Client[Any]) -> None:
     page = await search(client, type="artists", limit=5, offset=10)
     assert (page["total"], page["limit"], page["offset"]) == (1, 5, 10)
+
+
+@pytest.mark.parametrize(
+    ("group", "has_more", "total"),
+    [
+        ({"has_more": True}, True, None),
+        ({"has_more": False}, False, None),
+        ({"limit": 1, "offset": 0, "total": 2}, True, 2),
+        ({"limit": 1, "offset": 1, "total": 2}, False, 2),
+    ],
+)
+async def test_has_more_comes_from_qobuz_or_from_the_total(
+    client: Client[Any],
+    fake_qobuz: FakeQobuz,
+    group: dict[str, Any],
+    has_more: bool,
+    total: int | None,
+) -> None:
+    """AC-BEH-16"""
+    album = SEARCH_RESULTS["albums"]["items"][0]
+    fake_qobuz.api_responses["catalog/search"] = httpx2.Response(
+        200, json={"albums": {**group, "items": [album]}}
+    )
+    page = await search(client, type="albums")
+    assert (page["has_more"], page["total"]) == (has_more, total)
 
 
 @pytest.mark.parametrize("arguments", [{"limit": 101}, {"limit": 0}, {"offset": -1}])
