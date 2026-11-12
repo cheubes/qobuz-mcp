@@ -169,6 +169,13 @@ class AwardSummary(BaseModel):
     publication_name: str | None
 
 
+class AwardDetail(BaseModel):
+    id: int
+    url: str
+    name: str
+    albums: Page[AlbumSummary]
+
+
 class Genre(BaseModel):
     id: int
     name: str
@@ -540,6 +547,20 @@ def award_summary(raw: dict[str, Any]) -> AwardSummary:
         url=web_player_url("award", raw["id"]),
         name=raw["name"],
         publication_name=magazine.get("name") if isinstance(magazine, dict) else None,
+    )
+
+
+def award_detail(
+    raw: dict[str, Any], albums: dict[str, Any], *, limit: int, offset: int
+) -> AwardDetail:
+    """An award from `award/page`, with its albums from `award/getAlbums`."""
+    return AwardDetail(
+        id=raw["id"],
+        url=web_player_url("award", raw["id"]),
+        name=raw["name"],
+        albums=Page[AlbumSummary](
+            **page_fields(albums, current_album_summary, limit=limit, offset=offset)
+        ),
     )
 
 
