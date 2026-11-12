@@ -31,6 +31,29 @@ from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
 
 SearchType = Literal["albums", "artists", "tracks", "playlists"]
 
+# The values album/getFeatured accepts, as listed by the API itself.
+FeaturedAlbumCategory = Literal[
+    "new-releases",
+    "new-releases-full",
+    "recent-releases",
+    "press-awards",
+    "best-sellers",
+    "most-streamed",
+    "editor-picks",
+    "most-featured",
+    "ideal-discography",
+    "qobuzissims",
+    "harmonia-mundi",
+    "universal-classic",
+    "universal-jazz",
+    "universal-jeunesse",
+    "universal-chanson",
+]
+
+GenreFilter = Annotated[
+    int | None, Field(ge=1, description="Only items of this genre (an ID from `list_genres`).")
+]
+
 
 async def search_catalog(
     ctx: Context,
@@ -173,3 +196,25 @@ async def list_genres(
     """
     payload = await qobuz(ctx).list_genres(parent_genre_id, limit=limit, offset=offset)
     return Page[Genre](**page_fields(payload.get("genres"), genre, limit=limit, offset=offset))
+
+
+async def list_featured_albums(
+    ctx: Context,
+    category: Annotated[
+        FeaturedAlbumCategory,
+        Field(
+            description=(
+                "Editorial list: new releases, press awards, best sellers, most streamed, "
+                "editor picks, ideal discography, Qobuzissimes, or a label selection."
+            )
+        ),
+    ],
+    genre_id: GenreFilter = None,
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[AlbumSummary]:
+    """List albums from one of Qobuz's editorial selections, optionally for one genre."""
+    payload = await qobuz(ctx).list_featured_albums(category, genre_id, limit=limit, offset=offset)
+    return Page[AlbumSummary](
+        **page_fields(payload.get("albums"), album_summary, limit=limit, offset=offset)
+    )
