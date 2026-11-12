@@ -111,6 +111,8 @@ class FakeQobuz:
             if request.url.params["label_id"] != str(LABEL["id"]):
                 return httpx2.Response(404, json={"status": "error", "code": 404})
             return httpx2.Response(200, json=LABEL)
+        if endpoint == "album/getFeatured":
+            return httpx2.Response(200, json={"albums": SEARCH_RESULTS["albums"]})
         if endpoint == "genre/list":
             parent = request.url.params.get("parent_id")
             items = [
