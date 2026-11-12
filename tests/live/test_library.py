@@ -37,3 +37,18 @@ async def test_list_new_releases_from_favorites(live_client: Client[Any], source
     assert page is not None
     assert isinstance(page["has_more"], bool)
     assert len(page["items"]) <= 2
+
+
+async def test_check_library(live_client: Client[Any]) -> None:
+    """AC-LIVE-10"""
+    favorites = await live_client.call_tool("list_favorites", {"type": "albums", "limit": 1})
+    items = favorites.structured_content["result"]["items"]  # type: ignore[index]
+    album_ids = [items[0]["item"]["id"]] if items else ["0000000000000"]
+    result = await live_client.call_tool(
+        "check_library", {"album_ids": album_ids, "artist_ids": [1]}
+    )
+    status = result.structured_content
+    assert status is not None
+    assert [album["id"] for album in status["albums"]] == album_ids
+    assert status["albums"][0]["favorite"] is bool(items)
+    assert status["artists"][0]["purchased"] is None

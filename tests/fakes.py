@@ -31,6 +31,8 @@ AWARDS = json.loads((FIXTURES / "api" / "award_explore.json").read_text())
 AWARD = json.loads((FIXTURES / "api" / "award_page.json").read_text())
 STORIES = json.loads((FIXTURES / "api" / "story_search.json").read_text())
 RELATED_STORIES = json.loads((FIXTURES / "api" / "related_stories.json").read_text())
+FAVORITE_IDS = json.loads((FIXTURES / "api" / "favorite_ids.json").read_text())
+PURCHASE_IDS = json.loads((FIXTURES / "api" / "purchase_ids.json").read_text())
 RADIO = json.loads((FIXTURES / "api" / "radio.json").read_text())
 ARTIST_RELEASES = json.loads((FIXTURES / "api" / "artist_releases.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_page.json").read_text())
@@ -210,6 +212,10 @@ class FakeQobuz:
             return httpx2.Response(200, json={"albums": SEARCH_RESULTS["albums"]})
         if endpoint == "discover/playlists":
             return httpx2.Response(200, json=DISCOVER_PLAYLISTS)
+        if endpoint == "favorite/getUserFavoriteIds":
+            return httpx2.Response(200, json=FAVORITE_IDS)
+        if endpoint == "purchase/getUserPurchasesIds":
+            return httpx2.Response(200, json=PURCHASE_IDS)
         if endpoint == "favorite/getNewReleases":
             return httpx2.Response(200, json=LABEL_ALBUMS)
         if endpoint == "favorite/getUserFavorites":

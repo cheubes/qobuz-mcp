@@ -1,0 +1,5 @@
+{
+  "albums": {"total": 1, "items": [{"id": "0000000000021"}]},
+  "tracks": {"total": 1, "items": [3002]},
+  "user": {"id": 42, "login": "synthetic-login@example.invalid"}
+}

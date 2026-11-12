@@ -61,7 +61,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   The `(planned)` tools of FS 5.1, one pull request each, each removing its marker. The AC-BEH-04 tests from step 8 are extended to awards and stories.
   Delivers: AC-CAT-08, AC-CAT-09, AC-CAT-10, AC-CAT-11, AC-LIVE-09.
   Done when: the criteria are covered, all checks pass, and no tool of FS 5.1 is marked `(planned)`.
-- [ ] **14. New library read tools**
+- [x] **14. New library read tools**
   The `(planned)` tools of FS 5.2, one pull request each, each removing its marker.
   Delivers: AC-LIB-06, AC-LIB-07, AC-LIB-08, AC-LIB-09, AC-LIVE-10.
   Done when: the criteria are covered, all checks pass, and no tool of section 5 is marked `(planned)`.
