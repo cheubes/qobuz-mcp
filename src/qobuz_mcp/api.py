@@ -152,6 +152,19 @@ class QobuzClient:
             {"album_ids": album_ids, "artist_ids": artist_ids, "track_ids": track_ids},
         )
 
+    async def create_playlist(
+        self, name: str, description: str, *, is_public: bool, is_collaborative: bool
+    ) -> dict[str, Any]:
+        return await self.post(
+            "playlist/create",
+            {
+                "name": name,
+                "description": description,
+                "is_public": is_public,
+                "is_collaborative": is_collaborative,
+            },
+        )
+
     async def get_playlist(self, playlist_id: int, *, limit: int, offset: int) -> dict[str, Any]:
         return await self.get(
             "playlist/get",
