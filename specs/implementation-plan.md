@@ -57,7 +57,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `list_featured_playlists`, `get_label`, `list_featured_albums` and `get_artist` move to the current web player endpoints (ADR-0033 to ADR-0036), one pull request each. The live test guard allows their new endpoints.
   Delivers: AC-CAT-05, AC-CAT-06, AC-CAT-07, AC-LIVE-07, AC-LIVE-08.
   Done when: the criteria are covered, all checks pass, and no migrated tool calls its former endpoint.
-- [ ] **13. New catalog tools**
+- [x] **13. New catalog tools**
   The `(planned)` tools of FS 5.1, one pull request each, each removing its marker. The AC-BEH-04 tests from step 8 are extended to awards and stories.
   Delivers: AC-CAT-08, AC-CAT-09, AC-CAT-10, AC-CAT-11, AC-LIVE-09.
   Done when: the criteria are covered, all checks pass, and no tool of FS 5.1 is marked `(planned)`.

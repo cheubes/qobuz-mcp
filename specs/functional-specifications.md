@@ -89,7 +89,7 @@ A tool marked `(planned)` after its name is specified but not exposed yet. The p
 | `list_awards` | Press awards and distinctions, with the publication that grants them | `limit`, `offset` |
 | `get_award` | Award details and its paginated albums, optionally for one genre | `award_id`, `genre_id` (optional), `limit`, `offset` |
 | `search_stories` | Search magazine stories: title, summary, authors, date, sections | `query`, `limit`, `offset` |
-| `list_related_stories` (planned) | Magazine stories about an album, an artist, a label, a playlist or an award | `entity_type`, `entity_id`, `limit`, `offset` |
+| `list_related_stories` | Magazine stories about an album, an artist, a label, a playlist or an award | `entity_type`, `entity_id`, `limit`, `offset` |
 
 ### 5.2 Library, read (read-only)
 
