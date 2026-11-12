@@ -158,6 +158,14 @@ class QobuzClient:
             "favorite/getUserFavorites", {"type": kind, "limit": limit, "offset": offset}
         )
 
+    async def list_new_releases_from_favorites(
+        self, source: str, genre_id: int | None, *, limit: int, offset: int
+    ) -> dict[str, Any]:
+        return await self.get(
+            "favorite/getNewReleases",
+            {"type": source, "genre_ids": genre_id, "limit": limit, "offset": offset},
+        )
+
     async def list_user_playlists(
         self, owner_filter: str | None, *, limit: int, offset: int
     ) -> dict[str, Any]:

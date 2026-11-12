@@ -25,3 +25,15 @@ async def test_list_my_playlists_returns_a_page(
     assert page is not None
     assert page["total"] >= 0
     assert len(page["items"]) <= 1
+
+
+@pytest.mark.parametrize("source", ["artists", "labels", "awards"])
+async def test_list_new_releases_from_favorites(live_client: Client[Any], source: str) -> None:
+    """AC-LIVE-10"""
+    result = await live_client.call_tool(
+        "list_new_releases_from_favorites", {"source": source, "limit": 2}
+    )
+    page = result.structured_content
+    assert page is not None
+    assert isinstance(page["has_more"], bool)
+    assert len(page["items"]) <= 2
