@@ -75,6 +75,7 @@ mcp.tool(catalog.list_featured_albums, annotations=READ_ONLY)
 mcp.tool(catalog.list_featured_playlists, annotations=READ_ONLY)
 mcp.tool(library.list_favorites, annotations=READ_ONLY)
 mcp.tool(library.list_my_playlists, annotations=READ_ONLY)
+mcp.tool(library.list_purchases, annotations=READ_ONLY)
 
 
 def run() -> None:

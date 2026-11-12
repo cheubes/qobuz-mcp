@@ -21,6 +21,7 @@ from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
 
 FavoriteType = Literal["albums", "artists", "tracks"]
 PlaylistFilter = Literal["owned", "followed"]
+PurchaseType = Literal["albums", "tracks"]
 
 _QOBUZ_PLAYLIST_FILTERS: dict[PlaylistFilter, str] = {"owned": "owner", "followed": "subscriber"}
 
@@ -93,3 +94,23 @@ async def list_my_playlists(
     return Page[PlaylistSummary](
         **page_fields(payload.get("playlists"), playlist_summary, limit=limit, offset=offset)
     )
+
+
+async def list_purchases(
+    ctx: Context,
+    type: Annotated[PurchaseType, Field(description="Kind of purchases to list.")],
+    limit: Limit = DEFAULT_LIMIT,
+    offset: Offset = 0,
+) -> Page[AlbumSummary] | Page[TrackSummary]:
+    """List the albums or tracks the user has purchased on Qobuz."""
+    payload = await qobuz(ctx).list_purchases(type, limit=limit, offset=offset)
+    group = payload.get(type)
+    match type:
+        case "albums":
+            return Page[AlbumSummary](
+                **page_fields(group, album_summary, limit=limit, offset=offset)
+            )
+        case "tracks":
+            return Page[TrackSummary](
+                **page_fields(group, track_summary, limit=limit, offset=offset)
+            )
