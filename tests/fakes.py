@@ -24,6 +24,7 @@ ALBUM = json.loads((FIXTURES / "api" / "album_get.json").read_text())
 TRACK = json.loads((FIXTURES / "api" / "track_get.json").read_text())
 PLAYLIST = json.loads((FIXTURES / "api" / "playlist_get.json").read_text())
 ARTIST = json.loads((FIXTURES / "api" / "artist_page.json").read_text())
+RADIO = json.loads((FIXTURES / "api" / "radio.json").read_text())
 ARTIST_RELEASES = json.loads((FIXTURES / "api" / "artist_releases.json").read_text())
 LABEL = json.loads((FIXTURES / "api" / "label_page.json").read_text())
 LABEL_ALBUMS = json.loads((FIXTURES / "api" / "label_albums.json").read_text())
@@ -124,6 +125,8 @@ class FakeQobuz:
                 for group in SEARCH_TYPES
             }
             return httpx2.Response(200, json=payload)
+        if endpoint in ("radio/album", "radio/artist", "radio/track"):
+            return httpx2.Response(200, json=RADIO)
         if endpoint == "album/suggest":
             if request.url.params["album_id"] != ALBUM["id"]:
                 return httpx2.Response(404, json={"status": "error", "code": 404})
