@@ -91,6 +91,7 @@ mcp.tool(playlists.remove_tracks_from_playlist, annotations=DESTRUCTIVE)
 mcp.tool(playlists.move_playlist_tracks, annotations=DESTRUCTIVE)
 mcp.tool(playlists.delete_playlist, annotations=DESTRUCTIVE)
 mcp.tool(playlists.follow_playlist, annotations=ADDITIVE)
+mcp.tool(playlists.unfollow_playlist, annotations=DESTRUCTIVE)
 
 
 def run() -> None:

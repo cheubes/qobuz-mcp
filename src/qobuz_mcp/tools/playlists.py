@@ -128,3 +128,8 @@ async def follow_playlist(ctx: Context, playlist_id: AnyPlaylistId) -> WriteResu
     Followed playlists appear in `list_my_playlists`.
     """
     return write_result(await qobuz(ctx).follow_playlist(playlist_id))
+
+
+async def unfollow_playlist(ctx: Context, playlist_id: AnyPlaylistId) -> WriteResult:
+    """Stop following a playlist. The playlist itself is not deleted."""
+    return write_result(await qobuz(ctx).unfollow_playlist(playlist_id))
