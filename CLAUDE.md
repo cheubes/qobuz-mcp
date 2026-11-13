@@ -35,6 +35,9 @@ Specifications are `draft` until the "Output models" plan step is done, then `ap
 The reference list is "Development commands" in `technical-specifications.md`. The most common:
 
 ```sh
+scripts/check.sh                 # every check of CI, in order, plus live tests
+scripts/install.sh               # dependencies, login, client registration
+scripts/update.sh [--check]      # pull, sync, optionally run the live tests
 uv sync                          # install dependencies
 uv run qobuz-mcp login           # store credentials in the Keychain
 uv run qobuz-mcp serve           # run the server on stdio
@@ -55,7 +58,7 @@ The credentials in the Keychain belong to the user's real Qobuz account, and the
 
 ## Before each commit
 
-- **Run lint, format check, type check, the full test suite (live tests included) and the traceability check.** If live tests fail, report it: it may mean Qobuz changed its API. CI runs the same checks except live tests (ADR-0018), so a local run is the only one that catches API drift.
+- **Run `scripts/check.sh`: lint, format check, ShellCheck, type check, the full test suite (live tests included) and the traceability check.** If live tests fail, report it: it may mean Qobuz changed its API. CI runs the same checks except live tests (ADR-0018), so a local run is the only one that catches API drift.
 - **Check all files in `specs/`** for consistency, not only those touched by the commit.
 - **If one or more specifications need adjusting** (to stay consistent with each other or with the change), block the commit: propose the updates and wait for approval before applying them, then commit.
 - **Update `specs/implementation-plan.md`**: check a step only when its exit condition holds.

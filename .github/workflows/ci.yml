@@ -27,6 +27,7 @@ jobs:
       - run: uv lock --check
       - run: uv run ruff check .
       - run: uv run ruff format --check .
+      - run: uvx --from shellcheck-py@0.11.0.1 shellcheck scripts/*.sh
 
   types:
     runs-on: ubuntu-latest

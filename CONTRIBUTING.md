@@ -25,13 +25,10 @@ You need macOS, [uv](https://docs.astral.sh/uv/) and, for live tests, a Qobuz ac
 
 ```sh
 uv sync
-uv run ruff check . && uv run ruff format --check .
-uv run mypy
-uv run pytest
-uv run python scripts/check_traceability.py
+scripts/check.sh
 ```
 
-`uv run pytest` includes live tests against the real Qobuz API when you are logged in (`uv run qobuz-mcp login`). They are read-only. Use `uv run pytest -m "not live"` to skip them. CI runs every check except live tests.
+The script runs the checks of CI in the same order, and stops at the first failure: lock file, lint, format, ShellCheck, types, tests with coverage, traceability. It also runs live tests against the real Qobuz API when you are logged in (`uv run qobuz-mcp login`). They are read-only, and skipped when you are not logged in. CI runs every check except live tests.
 
 ## Rules that are not negotiable
 
