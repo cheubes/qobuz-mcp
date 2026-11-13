@@ -50,6 +50,9 @@ class CallbackServer:
         return self._code
 
     def close(self) -> None:
+        # Releases a wait_for_code thread left behind when login is interrupted: the executor
+        # would otherwise keep the process alive until the timeout.
+        self._received.set()
         if self._thread.is_alive():
             self._httpd.shutdown()
             self._thread.join()

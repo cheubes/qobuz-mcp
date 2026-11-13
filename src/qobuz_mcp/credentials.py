@@ -3,7 +3,9 @@ import os
 from dataclasses import dataclass, field
 
 import keyring
-from keyring.errors import PasswordDeleteError
+from keyring.errors import KeyringError
+
+from qobuz_mcp.errors import KeychainError
 
 KEYCHAIN_SERVICE = "qobuz-mcp"
 KEYCHAIN_ACCOUNT = "default"
@@ -19,7 +21,10 @@ def save_credentials(credentials: Credentials) -> None:
     value = json.dumps(
         {"app_id": credentials.app_id, "user_auth_token": credentials.user_auth_token}
     )
-    keyring.set_password(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT, value)
+    try:
+        keyring.set_password(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT, value)
+    except KeyringError as error:
+        raise KeychainError() from error
 
 
 APP_ID_OVERRIDE_VARIABLE = "QOBUZ_APP_ID"
@@ -30,7 +35,7 @@ def load_credentials() -> Credentials | None:
 
     `QOBUZ_APP_ID`, when set, replaces the stored app_id.
     """
-    raw = keyring.get_password(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT)
+    raw = _read_item()
     if raw is None:
         return None
     try:
@@ -43,8 +48,19 @@ def load_credentials() -> Credentials | None:
 
 def delete_credentials() -> bool:
     """Delete the stored credentials. Return False when there were none."""
+    # The macOS backend raises the same PasswordDeleteError for a missing item and for a
+    # denied access, so the item is looked up first.
+    if _read_item() is None:
+        return False
     try:
         keyring.delete_password(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT)
-    except PasswordDeleteError:
-        return False
+    except KeyringError as error:
+        raise KeychainError() from error
     return True
+
+
+def _read_item() -> str | None:
+    try:
+        return keyring.get_password(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT)
+    except KeyringError as error:
+        raise KeychainError() from error

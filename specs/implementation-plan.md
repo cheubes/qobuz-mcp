@@ -77,3 +77,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   README, install script and client configuration for Antigravity CLI (ADR-0039).
   Delivers: AC-SETUP-19, AC-BEH-17.
   Done when: both manual criteria have been checked by hand with Antigravity CLI.
+- [x] **18. Keychain errors and interrupted login**
+  `KeychainError` (ADR-0040), and the callback server releases a pending wait when it closes.
+  Delivers: AC-SETUP-20, AC-SETUP-21, AC-BEH-18.
+  Done when: the criteria are covered and all checks pass.

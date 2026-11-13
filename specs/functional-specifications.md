@@ -140,6 +140,7 @@ Errors are returned as explicit, actionable messages:
 | Item not found | State which ID was not found |
 | Write on a playlist the user does not own | State that the playlist is not owned by the user |
 | Rate limited or Qobuz unavailable | State it and suggest retrying later |
+| Keychain locked or access denied | State that the Keychain could not be accessed, and ask the user to unlock it or allow access when macOS asks (ADR-0040) |
 
 ### FS-BEH-3: confidentiality
 
@@ -199,6 +200,8 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-SETUP-17** [test] Given the OAuth private key cannot be extracted, when the user runs `login`, then the command fails with a message suggesting `login --token`.
 - **AC-SETUP-18** [manual] Given a real Qobuz account, when the user runs `login` and signs in in the browser, then the token is stored and `login` reports the account's display name, which it reads with the new token.
 - **AC-SETUP-19** [manual] Given the configuration documented in the README, when Antigravity CLI starts, then the server is connected and its tools are listed.
+- **AC-SETUP-20** [test] Given the Keychain is locked or access is denied, when the user runs `login` or `logout`, then the command exits with a non-zero status and states that the Keychain could not be accessed.
+- **AC-SETUP-21** [test] Given `login` is interrupted while waiting for the browser, then the command exits at once, without waiting for the 5-minute limit.
 
 ### Cross-cutting behaviors
 
@@ -219,6 +222,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-BEH-15** [manual] Given a playlist whose description asks the assistant to modify the library, when the assistant reads it through `get_playlist`, then no write tool runs without the client asking the user for confirmation.
 - **AC-BEH-16** [test] Given Qobuz returns a page with `has_more` and no total, then the result's `total` is null and its `has_more` is Qobuz's value. Given Qobuz returns a page with a total, then `has_more` states whether items remain after this page.
 - **AC-BEH-17** [manual] Given a playlist whose description asks the assistant to modify the library, when Antigravity CLI reads it through `get_playlist`, then no write tool runs without Antigravity CLI asking the user for confirmation.
+- **AC-BEH-18** [test] Given the Keychain is locked or access is denied, when any tool is called, then the error asks the user to unlock the Keychain or allow access.
 
 ### Catalog
 
