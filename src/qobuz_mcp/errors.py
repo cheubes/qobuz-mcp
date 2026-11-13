@@ -49,6 +49,10 @@ class ForbiddenError(QobuzError):
     """Qobuz refused the operation, typically a write on a playlist the user does not own."""
 
 
+class DuplicateTracksError(QobuzError):
+    """Qobuz refused to add tracks already in the playlist, and added none."""
+
+
 class NotFoundError(QobuzError):
     """Qobuz found no item for the requested IDs."""
 

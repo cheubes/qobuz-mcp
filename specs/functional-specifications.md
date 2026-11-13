@@ -109,7 +109,7 @@ A tool marked `(planned)` after its name is specified but not exposed yet. The p
 | `remove_favorites` | destructive | Remove albums, artists and/or tracks from favorites | `album_ids`, `artist_ids`, `track_ids` |
 | `create_playlist` | additive | Create a playlist, private and non-collaborative unless requested otherwise | `name`, `description`, `is_public` (default `false`), `is_collaborative` (default `false`) |
 | `update_playlist` | destructive | Change a playlist's name, description, visibility or collaborative flag | `playlist_id`, fields to change |
-| `add_tracks_to_playlist` | additive | Append tracks to a playlist | `playlist_id`, `track_ids` |
+| `add_tracks_to_playlist` | additive | Append tracks to a playlist. If any of them is already in it, nothing is added (ADR-0042) | `playlist_id`, `track_ids` |
 | `remove_tracks_from_playlist` | destructive | Remove track entries from a playlist | `playlist_id`, `playlist_track_ids` |
 | `move_playlist_tracks` | destructive | Reorder track entries within a playlist | `playlist_id`, `playlist_track_ids`, `insert_before` |
 | `delete_playlist` | destructive | Delete a playlist owned by the user | `playlist_id` |
@@ -139,6 +139,7 @@ Errors are returned as explicit, actionable messages:
 | `app_id` rejected | Ask the user to run `qobuz-mcp login` again, or set `QOBUZ_APP_ID` |
 | Item not found | State which ID was not found |
 | Write on a playlist the user does not own | State that the playlist is not owned by the user |
+| Tracks added to a playlist that already holds some of them | State that nothing was added, naming the track and playlist IDs |
 | Rate limited or Qobuz unavailable | State it and suggest retrying later |
 | Keychain locked or access denied | State that the Keychain could not be accessed, and ask the user to unlock it or allow access when macOS asks (ADR-0040) |
 
@@ -260,6 +261,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-PL-05** [test] Given a playlist containing the same track twice, when `remove_tracks_from_playlist` targets one entry, then only that entry's `playlist_track_id` is sent.
 - **AC-PL-06** [test] `move_playlist_tracks` sends the entries to move and their target position.
 - **AC-PL-07** [test] Given `create_playlist` is called without `is_public` and `is_collaborative`, then the playlist is created private and non-collaborative.
+- **AC-PL-08** [test] Given Qobuz refuses `add_tracks_to_playlist` because some of the tracks are already in the playlist, then the error states that nothing was added, and names the track and playlist IDs.
 
 ### Live
 

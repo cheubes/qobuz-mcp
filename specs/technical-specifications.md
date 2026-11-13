@@ -169,6 +169,7 @@ Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised 
 | 400 whose message mentions the app id (Qobuz: "Invalid or missing app_id parameter") | `InvalidAppIdError` |
 | 403 | `ForbiddenError` |
 | 404 | `NotFoundError` |
+| 409 from `playlist/addTracks` | `DuplicateTracksError` |
 | 429, 5xx, network error, timeout | `QobuzUnavailableError` |
 | Anything else, including a 200 whose body is not a JSON object | `QobuzApiError` |
 
@@ -210,7 +211,7 @@ All endpoints below were called successfully during the proof of concept, or dur
 | `remove_favorites` | `favorite/delete` | `album_ids`, `artist_ids`, `track_ids` |
 | `create_playlist` | `playlist/create` | `name`, `description`, `is_public`, `is_collaborative` |
 | `update_playlist` | `playlist/update` | `playlist_id` and the fields to change only. Omitted fields are kept |
-| `add_tracks_to_playlist` | `playlist/addTracks` | `playlist_id`, `track_ids`, `no_duplicate` |
+| `add_tracks_to_playlist` | `playlist/addTracks` | `playlist_id`, `track_ids`, `no_duplicate` (always `true`: Qobuz answers 409 and adds nothing when any of the tracks is already in the playlist, ADR-0042) |
 | `remove_tracks_from_playlist` | `playlist/deleteTracks` | `playlist_id`, `playlist_track_ids` |
 | `move_playlist_tracks` | `playlist/updateTracksPosition` | `playlist_id`, `playlist_track_ids`, `insert_before`: the entries are moved before the entry currently at that 1-based position, `0` meaning first. Moving to the end (`tracks_count + 1`) is inferred, not observed |
 | `delete_playlist` | `playlist/delete` | `playlist_id` |

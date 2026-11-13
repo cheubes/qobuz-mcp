@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator
 from typing import Any
 
+import httpx2
 import pytest
 from fastmcp import Client
 
@@ -39,7 +40,28 @@ async def test_tracks_are_sent_in_the_given_order(
     assert fake_qobuz.form("playlist/addTracks") == {
         "playlist_id": "301",
         "track_ids": "103,101,102",
+        "no_duplicate": "true",
     }
+
+
+async def test_tracks_already_in_the_playlist_are_reported(
+    client: Client[Any], fake_qobuz: FakeQobuz
+) -> None:
+    """AC-PL-08"""
+    fake_qobuz.api_responses["playlist/addTracks"] = httpx2.Response(
+        409, json={"status": "error", "code": 409, "message": "Conflict"}
+    )
+    result = await client.call_tool(
+        "add_tracks_to_playlist",
+        {"playlist_id": 301, "track_ids": [103, 101]},
+        raise_on_error=False,
+    )
+    assert result.is_error
+    message = "".join(getattr(block, "text", "") for block in result.content)
+    assert "track_ids=103,101" in message
+    assert "playlist_id=301" in message
+    assert "nothing was added" in message
+    assert FAKE_TOKEN not in message
 
 
 async def test_an_empty_track_list_is_rejected_before_any_request(

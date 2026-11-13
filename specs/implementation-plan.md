@@ -85,3 +85,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   Letters and digits only for string ID parameters (ADR-0041).
   Delivers: AC-BEH-19.
   Done when: the criterion is covered and all checks pass.
+- [x] **20. Duplicate tracks in playlists**
+  `add_tracks_to_playlist` sends `no_duplicate=true`, and a 409 raises `DuplicateTracksError` (ADR-0042).
+  Delivers: AC-PL-08.
+  Done when: the criterion is covered and all checks pass.
