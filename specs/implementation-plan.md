@@ -73,7 +73,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `scripts/install.sh`, `scripts/update.sh` and `scripts/check.sh` (ADR-0037), checked by ShellCheck in the `lint` job (ADR-0038). README, `CONTRIBUTING.md` and `CLAUDE.md` point to them.
   Delivers: none.
   Done when: ShellCheck passes in CI, and the three scripts ran successfully on the maintainer's machine.
-- [ ] **17. Antigravity CLI client**
+- [x] **17. Antigravity CLI client**
   README, install script and client configuration for Antigravity CLI (ADR-0039).
   Delivers: AC-SETUP-19, AC-BEH-17.
   Done when: both manual criteria have been checked by hand with Antigravity CLI.

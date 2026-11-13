@@ -2,7 +2,7 @@
 
 A local MCP server for macOS that lets an AI assistant, such as Claude Desktop, Claude Code or Antigravity CLI, explore the Qobuz catalog and manage your Qobuz library: favorites and playlists.
 
-> **Status: usable.** Every step of the [implementation plan](specs/implementation-plan.md) is done, and the setup has been checked in Claude Desktop and Claude Code. The server relies on an unofficial API: see the disclaimers below.
+> **Status: usable.** Every step of the [implementation plan](specs/implementation-plan.md) is done, and the setup has been checked in Claude Desktop, Claude Code and Antigravity CLI. The server relies on an unofficial API: see the disclaimers below.
 
 ## What it does
 
