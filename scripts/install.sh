@@ -1,6 +1,6 @@
 #!/bin/sh
-# Install qobuz-mcp: dependencies, Qobuz login, Claude Code registration, Claude Desktop
-# configuration. Safe to run again: completed steps are skipped.
+# Install qobuz-mcp: dependencies, Qobuz login, Claude Code and Antigravity CLI registration,
+# Claude Desktop configuration. Safe to run again: completed steps are skipped.
 set -eu
 cd "$(dirname "$0")/.."
 repo=$(pwd)
@@ -33,6 +33,16 @@ elif claude mcp get qobuz >/dev/null 2>&1; then
   echo "The qobuz server is already registered."
 else
   claude mcp add --scope user qobuz -- uv run --directory "$repo" qobuz-mcp serve
+fi
+
+echo "==> Antigravity CLI"
+if ! command -v agy >/dev/null 2>&1; then
+  echo "Antigravity CLI not found: skipped."
+elif agy mcp list | grep -q '^qobuz '; then
+  echo "The qobuz server is already registered."
+else
+  # `--` keeps the arguments of uv, which start with `-`, away from agy's own flags.
+  agy mcp add qobuz -- uv run --directory "$repo" qobuz-mcp serve
 fi
 
 echo "==> Claude Desktop"

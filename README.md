@@ -1,8 +1,8 @@
 # qobuz-mcp
 
-A local MCP server for macOS that lets an AI assistant, such as Claude Desktop or Claude Code, explore the Qobuz catalog and manage your Qobuz library: favorites and playlists.
+A local MCP server for macOS that lets an AI assistant, such as Claude Desktop, Claude Code or Antigravity CLI, explore the Qobuz catalog and manage your Qobuz library: favorites and playlists.
 
-> **Status: usable.** Every step of the [implementation plan](specs/implementation-plan.md) is done, and the setup has been checked in Claude Desktop and Claude Code. The server relies on an unofficial API: see the disclaimers below.
+> **Status: usable.** Every step of the [implementation plan](specs/implementation-plan.md) is done, and the setup has been checked in Claude Desktop, Claude Code and Antigravity CLI. The server relies on an unofficial API: see the disclaimers below.
 
 ## What it does
 
@@ -27,7 +27,7 @@ It does not control playback, and it does not download or stream audio.
 - macOS, since credentials are stored in the macOS Keychain.
 - [Homebrew](https://brew.sh) and [uv](https://docs.astral.sh/uv/): `brew install uv`. uv installs the Python version the project needs.
 - A Qobuz account.
-- Claude Desktop or Claude Code, or another MCP client that supports the stdio transport.
+- Claude Desktop, Claude Code or [Antigravity CLI](https://antigravity.google/product/antigravity-cli) (`brew install --cask antigravity-cli`), or another MCP client that supports the stdio transport. The Gemini app cannot run a local server, and Gemini CLI no longer serves individual accounts.
 
 ## Installation
 
@@ -37,7 +37,7 @@ cd qobuz-mcp
 scripts/install.sh
 ```
 
-The script installs the dependencies, runs the login described below when no credentials are stored, registers the server in Claude Code, and prints the block to add to the Claude Desktop configuration, with your paths. It skips the steps already done, so you can run it again. The sections below detail each step, to do them by hand.
+The script installs the dependencies, runs the login described below when no credentials are stored, registers the server in Claude Code and Antigravity CLI when they are installed, and prints the block to add to the Claude Desktop configuration, with your paths. It skips the steps already done, so you can run it again. The sections below detail each step, to do them by hand.
 
 ## Update
 
@@ -45,7 +45,7 @@ The script installs the dependencies, runs the login described below when no cre
 scripts/update.sh
 ```
 
-The script pulls the latest version and updates the dependencies. Then restart Claude Desktop and open a new Claude Code session. With `--check`, it also runs the live tests, which tell whether Qobuz changed its API: run it when a tool starts failing.
+The script pulls the latest version and updates the dependencies. Then restart Claude Desktop, and open a new Claude Code or Antigravity CLI session. With `--check`, it also runs the live tests, which tell whether Qobuz changed its API: run it when a tool starts failing.
 
 ## Login
 
@@ -92,6 +92,14 @@ claude mcp add --scope user qobuz -- uv run --directory /path/to/qobuz-mcp qobuz
   }
 }
 ```
+
+**Antigravity CLI:**
+
+```sh
+agy mcp add qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
+```
+
+The server goes to the global configuration, `~/.gemini/config/mcp_config.json`, for every conversation. By default, Antigravity CLI asks for your approval before running a qobuz tool. Never use `--dangerously-skip-permissions` or the `always-proceed` tool permission with this server: they remove the confirmation of write tools.
 
 Read-only tools can be allowed once in your client. Keep the confirmation of write tools: see the last disclaimer above.
 

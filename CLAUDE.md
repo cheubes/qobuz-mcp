@@ -1,6 +1,6 @@
 # qobuz-mcp
 
-Local MCP server for macOS that lets an AI assistant (Claude Desktop, Claude Code) explore the Qobuz catalog and manage the user's Qobuz library: favorites and playlists. Built in Python with FastMCP and uv, on top of Qobuz's unofficial web player API.
+Local MCP server for macOS that lets an AI assistant (Claude Desktop, Claude Code, Antigravity CLI) explore the Qobuz catalog and manage the user's Qobuz library: favorites and playlists. Built in Python with FastMCP and uv, on top of Qobuz's unofficial web player API.
 
 ## Specifications
 
