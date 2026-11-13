@@ -1,6 +1,6 @@
 #!/bin/sh
-# Install qobuz-mcp: dependencies, Qobuz login, Claude Code registration, Claude Desktop
-# configuration. Safe to run again: completed steps are skipped.
+# Install qobuz-mcp: dependencies, Qobuz login, Claude Code and Gemini CLI registration, Claude
+# Desktop configuration. Safe to run again: completed steps are skipped.
 set -eu
 cd "$(dirname "$0")/.."
 repo=$(pwd)
@@ -33,6 +33,17 @@ elif claude mcp get qobuz >/dev/null 2>&1; then
   echo "The qobuz server is already registered."
 else
   claude mcp add --scope user qobuz -- uv run --directory "$repo" qobuz-mcp serve
+fi
+
+echo "==> Gemini CLI"
+gemini_settings="$HOME/.gemini/settings.json"
+if ! command -v gemini >/dev/null 2>&1; then
+  echo "Gemini CLI not found: skipped."
+elif [ -f "$gemini_settings" ] && grep -q '"qobuz"' "$gemini_settings"; then
+  echo "The qobuz server is already registered."
+else
+  # Never --trust: it would bypass the confirmation of write tools (ADR-0039).
+  gemini mcp add --scope user qobuz uv run --directory "$repo" qobuz-mcp serve
 fi
 
 echo "==> Claude Desktop"

@@ -1,6 +1,6 @@
 # qobuz-mcp
 
-A local MCP server for macOS that lets an AI assistant, such as Claude Desktop or Claude Code, explore the Qobuz catalog and manage your Qobuz library: favorites and playlists.
+A local MCP server for macOS that lets an AI assistant, such as Claude Desktop, Claude Code or Gemini CLI, explore the Qobuz catalog and manage your Qobuz library: favorites and playlists.
 
 > **Status: usable.** Every step of the [implementation plan](specs/implementation-plan.md) is done, and the setup has been checked in Claude Desktop and Claude Code. The server relies on an unofficial API: see the disclaimers below.
 
@@ -27,7 +27,7 @@ It does not control playback, and it does not download or stream audio.
 - macOS, since credentials are stored in the macOS Keychain.
 - [Homebrew](https://brew.sh) and [uv](https://docs.astral.sh/uv/): `brew install uv`. uv installs the Python version the project needs.
 - A Qobuz account.
-- Claude Desktop or Claude Code, or another MCP client that supports the stdio transport.
+- Claude Desktop, Claude Code or [Gemini CLI](https://github.com/google-gemini/gemini-cli), or another MCP client that supports the stdio transport. The Gemini app cannot run a local server.
 
 ## Installation
 
@@ -37,7 +37,7 @@ cd qobuz-mcp
 scripts/install.sh
 ```
 
-The script installs the dependencies, runs the login described below when no credentials are stored, registers the server in Claude Code, and prints the block to add to the Claude Desktop configuration, with your paths. It skips the steps already done, so you can run it again. The sections below detail each step, to do them by hand.
+The script installs the dependencies, runs the login described below when no credentials are stored, registers the server in Claude Code and Gemini CLI when they are installed, and prints the block to add to the Claude Desktop configuration, with your paths. It skips the steps already done, so you can run it again. The sections below detail each step, to do them by hand.
 
 ## Update
 
@@ -45,7 +45,7 @@ The script installs the dependencies, runs the login described below when no cre
 scripts/update.sh
 ```
 
-The script pulls the latest version and updates the dependencies. Then restart Claude Desktop and open a new Claude Code session. With `--check`, it also runs the live tests, which tell whether Qobuz changed its API: run it when a tool starts failing.
+The script pulls the latest version and updates the dependencies. Then restart Claude Desktop, and open a new Claude Code or Gemini CLI session. With `--check`, it also runs the live tests, which tell whether Qobuz changed its API: run it when a tool starts failing.
 
 ## Login
 
@@ -92,6 +92,14 @@ claude mcp add --scope user qobuz -- uv run --directory /path/to/qobuz-mcp qobuz
   }
 }
 ```
+
+**Gemini CLI:**
+
+```sh
+gemini mcp add --scope user qobuz uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
+```
+
+`--scope user` writes the server to `~/.gemini/settings.json`, for every directory. Never add `--trust`, never answer "always allow all tools" from the qobuz server, and do not use YOLO mode: each of them removes the confirmation of write tools.
 
 Read-only tools can be allowed once in your client. Keep the confirmation of write tools: see the last disclaimer above.
 

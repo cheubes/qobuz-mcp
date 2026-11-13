@@ -4,7 +4,7 @@ Status: approved
 
 ## 1. Purpose
 
-A local MCP server that lets an AI assistant (Claude Desktop, Claude Code) explore the Qobuz catalog and manage the user's Qobuz library: favorites and playlists.
+A local MCP server that lets an AI assistant (Claude Desktop, Claude Code, Gemini CLI) explore the Qobuz catalog and manage the user's Qobuz library: favorites and playlists.
 
 ## 2. Context and constraints
 
@@ -53,7 +53,7 @@ Login and logout take effect on the next tool call, without restarting the MCP c
 
 ### FS-SETUP-3: client registration
 
-The user registers the server in their MCP client configuration (stdio transport). The README documents the configuration for Claude Desktop and Claude Code. An install script registers the server in Claude Code and prints the Claude Desktop configuration (ADR-0037).
+The user registers the server in their MCP client configuration (stdio transport). The README documents the configuration for Claude Desktop, Claude Code and Gemini CLI. An install script registers the server in Claude Code and Gemini CLI, and prints the Claude Desktop configuration (ADR-0037, ADR-0039).
 
 ## 5. Tools
 
@@ -198,6 +198,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-SETUP-16** [test] The callback server listens on `127.0.0.1` only, and is closed when `login` ends.
 - **AC-SETUP-17** [test] Given the OAuth private key cannot be extracted, when the user runs `login`, then the command fails with a message suggesting `login --token`.
 - **AC-SETUP-18** [manual] Given a real Qobuz account, when the user runs `login` and signs in in the browser, then the token is stored and `login` reports the account's display name, which it reads with the new token.
+- **AC-SETUP-19** [manual] Given the configuration documented in the README, when Gemini CLI starts, then the server is connected and its tools are listed.
 
 ### Cross-cutting behaviors
 
@@ -217,6 +218,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-BEH-14** [test] The server's MCP instructions cover every point listed in FS-BEH-5.
 - **AC-BEH-15** [manual] Given a playlist whose description asks the assistant to modify the library, when the assistant reads it through `get_playlist`, then no write tool runs without the client asking the user for confirmation.
 - **AC-BEH-16** [test] Given Qobuz returns a page with `has_more` and no total, then the result's `total` is null and its `has_more` is Qobuz's value. Given Qobuz returns a page with a total, then `has_more` states whether items remain after this page.
+- **AC-BEH-17** [manual] Given a playlist whose description asks the assistant to modify the library, when Gemini CLI reads it through `get_playlist`, then no write tool runs without Gemini CLI asking the user for confirmation.
 
 ### Catalog
 
