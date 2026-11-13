@@ -223,6 +223,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-BEH-16** [test] Given Qobuz returns a page with `has_more` and no total, then the result's `total` is null and its `has_more` is Qobuz's value. Given Qobuz returns a page with a total, then `has_more` states whether items remain after this page.
 - **AC-BEH-17** [manual] Given a playlist whose description asks the assistant to modify the library, when Antigravity CLI reads it through `get_playlist`, then no write tool runs without Antigravity CLI asking the user for confirmation.
 - **AC-BEH-18** [test] Given the Keychain is locked or access is denied, when any tool is called, then the error asks the user to unlock the Keychain or allow access.
+- **AC-BEH-19** [test] Given a string ID with characters other than letters and digits, such as a comma, when any tool is called, then the call is rejected with a validation error and no request is sent to Qobuz.
 
 ### Catalog
 

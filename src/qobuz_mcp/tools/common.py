@@ -15,6 +15,9 @@ Limit = Annotated[
     int, Field(ge=1, le=MAX_LIMIT, description=f"Number of items to return, 1 to {MAX_LIMIT}.")
 ]
 Offset = Annotated[int, Field(ge=0, description="Number of items to skip, to fetch next pages.")]
+# Qobuz takes lists of IDs comma-separated: a comma inside one ID would send several.
+STRING_ID_PATTERN = r"^[0-9A-Za-z]+$"
+AlbumId = Annotated[str, Field(pattern=STRING_ID_PATTERN, description="Qobuz album ID (a string).")]
 
 
 def qobuz(ctx: Context) -> QobuzClient:

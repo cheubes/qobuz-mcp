@@ -81,3 +81,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `KeychainError` (ADR-0040), and the callback server releases a pending wait when it closes.
   Delivers: AC-SETUP-20, AC-SETUP-21, AC-BEH-18.
   Done when: the criteria are covered and all checks pass.
+- [x] **19. String ID format**
+  Letters and digits only for string ID parameters (ADR-0041).
+  Delivers: AC-BEH-19.
+  Done when: the criterion is covered and all checks pass.
