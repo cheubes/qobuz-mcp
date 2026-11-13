@@ -1,5 +1,5 @@
 from keyring.backend import KeyringBackend
-from keyring.errors import PasswordDeleteError
+from keyring.errors import KeyringLocked, PasswordDeleteError
 
 
 class MemoryKeyring(KeyringBackend):
@@ -23,3 +23,21 @@ class MemoryKeyring(KeyringBackend):
             del self._passwords[(service, username)]
         except KeyError:
             raise PasswordDeleteError(f"{service}/{username} not found") from None
+
+
+class LockedKeyring(KeyringBackend):
+    """Keyring backend acting as a locked Keychain, or one whose access the user denied."""
+
+    priority = 1.0
+
+    def __init__(self) -> None:
+        super().__init__()  # type: ignore[no-untyped-call]  # keyring's base __init__ is untyped
+
+    def get_password(self, service: str, username: str) -> str | None:
+        raise KeyringLocked("locked")
+
+    def set_password(self, service: str, username: str, password: str) -> None:
+        raise KeyringLocked("locked")
+
+    def delete_password(self, service: str, username: str) -> None:
+        raise PasswordDeleteError("denied")

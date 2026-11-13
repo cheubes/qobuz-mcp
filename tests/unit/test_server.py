@@ -2,12 +2,14 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 import httpx2
+import keyring
 import pytest
 from fastmcp import Client
 
 from qobuz_mcp import server
 from qobuz_mcp.credentials import Credentials, delete_credentials, save_credentials
 from tests.fakes import FAKE_APP_ID, FAKE_TOKEN, SEARCH_RESULTS, SEARCH_TYPES, FakeQobuz
+from tests.memory_keyring import LockedKeyring
 
 pytestmark = pytest.mark.anyio
 
@@ -158,6 +160,12 @@ async def test_not_logged_in_asks_to_log_in(client: Client[Any]) -> None:
     """AC-BEH-05"""
     delete_credentials()
     assert "qobuz-mcp login" in await search_error(client)
+
+
+async def test_locked_keychain_asks_to_unlock_it(client: Client[Any]) -> None:
+    """AC-BEH-18"""
+    keyring.set_keyring(LockedKeyring())
+    assert "Unlock it, or allow access when macOS asks" in await search_error(client)
 
 
 @pytest.mark.parametrize(

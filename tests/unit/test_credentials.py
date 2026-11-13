@@ -1,5 +1,6 @@
 import keyring
 import pytest
+from keyring.errors import PasswordDeleteError
 
 from qobuz_mcp.credentials import (
     KEYCHAIN_ACCOUNT,
@@ -9,7 +10,9 @@ from qobuz_mcp.credentials import (
     load_credentials,
     save_credentials,
 )
+from qobuz_mcp.errors import KeychainError
 from tests.fakes import FAKE_APP_ID, FAKE_TOKEN, as_json
+from tests.memory_keyring import LockedKeyring
 
 CREDENTIALS = Credentials(app_id=FAKE_APP_ID, user_auth_token=FAKE_TOKEN)
 
@@ -35,6 +38,29 @@ def test_delete_credentials_reports_whether_there_were_any() -> None:
     save_credentials(CREDENTIALS)
     assert delete_credentials() is True
     assert delete_credentials() is False
+
+
+def test_locked_keychain_raises_a_keychain_error() -> None:
+    keyring.set_keyring(LockedKeyring())
+    with pytest.raises(KeychainError):
+        load_credentials()
+    with pytest.raises(KeychainError):
+        save_credentials(CREDENTIALS)
+    with pytest.raises(KeychainError):
+        delete_credentials()
+
+
+def test_denied_deletion_is_not_reported_as_missing_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    save_credentials(CREDENTIALS)
+
+    def deny(service: str, username: str) -> None:
+        raise PasswordDeleteError("denied")
+
+    monkeypatch.setattr(keyring, "delete_password", deny)
+    with pytest.raises(KeychainError):
+        delete_credentials()
 
 
 def test_repr_never_shows_the_token() -> None:

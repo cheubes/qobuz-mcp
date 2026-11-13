@@ -1,11 +1,13 @@
 import runpy
 import sys
 
+import keyring
 import pytest
 
 from qobuz_mcp import cli, oauth
 from qobuz_mcp.credentials import Credentials, load_credentials, save_credentials
 from tests.fakes import BUNDLE, FAKE_APP_ID, FAKE_CODE, FAKE_TOKEN, FakeBrowser, FakeQobuz
+from tests.memory_keyring import LockedKeyring
 
 
 @pytest.fixture
@@ -167,4 +169,17 @@ def test_logout_removes_the_credentials(capsys: pytest.CaptureFixture[str]) -> N
     captured = capsys.readouterr()
     assert "Logged out" in captured.out
     assert "Not logged in" in captured.out
+    assert_no_secret(captured.out + captured.err)
+
+
+def test_locked_keychain_fails_login_and_logout(
+    fake_qobuz: FakeQobuz, browser: FakeBrowser, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """AC-SETUP-20"""
+    keyring.set_keyring(LockedKeyring())
+    assert cli.main(["login"]) == 1
+    assert cli.main(["logout"]) == 1
+    captured = capsys.readouterr()
+    assert captured.err.count("Could not access the macOS Keychain") == 2
+    assert "Not logged in" not in captured.out
     assert_no_secret(captured.out + captured.err)

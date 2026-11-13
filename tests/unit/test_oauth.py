@@ -1,4 +1,5 @@
 import socket
+import threading
 import urllib.parse
 
 import pytest
@@ -43,6 +44,17 @@ def test_callback_server_listens_on_loopback_only_and_closes() -> None:
     server.close()
     with pytest.raises(OSError), socket.create_connection((host, port), timeout=1):
         pass
+
+
+def test_close_releases_a_pending_wait() -> None:
+    """AC-SETUP-21"""
+    server = CallbackServer()
+    server.start()
+    waiter = threading.Thread(target=server.wait_for_code, args=(oauth.LOGIN_TIMEOUT_SECONDS,))
+    waiter.start()
+    server.close()
+    waiter.join(timeout=1)
+    assert not waiter.is_alive()
 
 
 def test_wait_for_code_returns_none_on_timeout() -> None:

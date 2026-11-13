@@ -29,6 +29,14 @@ class LoginTimeoutError(QobuzError):
         )
 
 
+class KeychainError(QobuzError):
+    def __init__(self) -> None:
+        super().__init__(
+            "Could not access the macOS Keychain. Unlock it, or allow access when macOS asks, "
+            "then try again."
+        )
+
+
 class AuthenticationError(QobuzError):
     """Not logged in, or Qobuz rejected the credentials."""
 

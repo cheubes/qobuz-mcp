@@ -74,7 +74,7 @@ tests/
     __init__.py
     conftest.py
     fakes.py             # test doubles: web player, Qobuz API, browser
-    memory_keyring.py    # in-memory keyring backend
+    memory_keyring.py    # in-memory and locked keyring backends
     fixtures/            # synthetic API payloads and web player snippets
     unit/
         __init__.py
@@ -117,6 +117,7 @@ Async tests use the anyio plugin (`@pytest.mark.anyio`), with the `anyio_backend
 - `QOBUZ_APP_ID`, when set, overrides the stored `app_id` at read time.
 - The server reads the item at each tool call, with no in-memory cache. `login` and `logout` therefore take effect on the next call without restarting the client (FS-SETUP-2). A cache would keep using the token after `logout`, since logging out does not revoke the token on Qobuz's side.
 - A missing item does not prevent the server from starting: tools return the "not logged in" error (FS-BEH-2) until the user logs in.
+- Every `KeyringError` raised by a read, a write or a deletion is turned into `KeychainError`, a `QobuzError` (FS-BEH-2, ADR-0040). `logout` reads the item before deleting it, since the macOS backend raises the same `PasswordDeleteError` for a missing item and for a denied deletion.
 
 Known limitation: Keychain access is granted to the Python interpreter binary that created the item. When uv upgrades the interpreter, macOS asks again for Keychain access on the next run.
 
@@ -144,7 +145,7 @@ The patterns were confirmed during the proof of concept on bundle `8.3.0-b029` a
 5. Call `user/get` with the token, which validates it and gives the display name `login` prints.
 6. Store the credentials (section 5).
 
-Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised and nothing is stored. The server never logs requests: the default request log line would contain the authorization code. Qobuz accepted a `127.0.0.1` redirect during the proof of concept. The random path segment keeps a stray or forged request from being taken for the callback, since the flow has no `state` parameter.
+Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised and nothing is stored. When `login` is interrupted, stopping the server also releases the thread waiting for the callback, so the command exits at once (AC-SETUP-21). The server never logs requests: the default request log line would contain the authorization code. Qobuz accepted a `127.0.0.1` redirect during the proof of concept. The random path segment keeps a stray or forged request from being taken for the callback, since the flow has no `state` parameter.
 
 ## 7. Qobuz API client
 
