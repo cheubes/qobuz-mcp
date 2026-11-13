@@ -39,7 +39,14 @@ from qobuz_mcp.models import (
     track_detail,
     track_summary,
 )
-from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
+from qobuz_mcp.tools.common import (
+    DEFAULT_LIMIT,
+    STRING_ID_PATTERN,
+    AlbumId,
+    Limit,
+    Offset,
+    qobuz,
+)
 
 SearchType = Literal["albums", "artists", "tracks", "playlists"]
 
@@ -125,7 +132,7 @@ async def search_catalog(
 
 async def get_album(
     ctx: Context,
-    album_id: Annotated[str, Field(min_length=1, description="Qobuz album ID (a string).")],
+    album_id: AlbumId,
     limit: Limit = DEFAULT_LIMIT,
     offset: Offset = 0,
 ) -> AlbumDetail:
@@ -309,7 +316,7 @@ async def list_featured_playlists(
 
 async def list_similar_albums(
     ctx: Context,
-    album_id: Annotated[str, Field(min_length=1, description="Qobuz album ID (a string).")],
+    album_id: AlbumId,
 ) -> Page[AlbumSummary]:
     """List albums similar to a given album, as Qobuz recommends them.
 
@@ -332,7 +339,7 @@ async def get_radio(
     seed_id: Annotated[
         str,
         Field(
-            min_length=1,
+            pattern=STRING_ID_PATTERN,
             description="Qobuz ID of the seed: an album ID, or an artist or track ID in digits.",
         ),
     ],
@@ -500,7 +507,7 @@ async def list_related_stories(
     entity_id: Annotated[
         str,
         Field(
-            min_length=1,
+            pattern=STRING_ID_PATTERN,
             description="Qobuz ID of that item: an album ID, or another ID in digits.",
         ),
     ],

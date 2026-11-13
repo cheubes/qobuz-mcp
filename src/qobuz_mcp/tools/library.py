@@ -23,13 +23,13 @@ from qobuz_mcp.models import (
     track_summary,
     write_result,
 )
-from qobuz_mcp.tools.common import DEFAULT_LIMIT, Limit, Offset, qobuz
+from qobuz_mcp.tools.common import DEFAULT_LIMIT, AlbumId, Limit, Offset, qobuz
 
 FavoriteType = Literal["albums", "artists", "tracks"]
 PlaylistFilter = Literal["owned", "followed"]
 PurchaseType = Literal["albums", "tracks"]
 
-AlbumIds = Annotated[list[str], Field(description="Qobuz album IDs (strings).")]
+AlbumIds = Annotated[list[AlbumId], Field(description="Qobuz album IDs (strings).")]
 ArtistIds = Annotated[list[int], Field(description="Qobuz artist IDs (integers).")]
 TrackIds = Annotated[list[int], Field(description="Qobuz track IDs (integers).")]
 

@@ -226,6 +226,7 @@ All endpoints below were called successfully during the proof of concept, or dur
 - A result typed as a union of models, such as `search_catalog`'s, is wrapped by FastMCP in a `result` object.
 - Each tool is an async function with typed parameters and a pydantic return type. FastMCP derives the input schema, the output schema and structured content from them.
 - Annotations follow FS section 5. All tools also set `openWorldHint: true`.
+- String ID parameters (album IDs, `seed_id` of `get_radio`, `entity_id` of `list_related_stories`) accept letters and digits only, since lists of IDs are sent comma-separated (ADR-0041).
 - Pagination follows FS-BEH-1; `offset` defaults to 0. List results use a generic `Page[T]` model: `items`, `has_more`, `total`, `limit`, `offset` (ADR-0032).
 - Public URLs are built in `models.py`: `https://open.qobuz.com/{album|artist|track|playlist|label}/{id}`, and `https://play.qobuz.com/{award|story}/{id}`, the web player routes `award/:awardId` and `story/:id`, for awards and stories.
 - Server instructions (FS-BEH-5): one constant in `server.py`, passed to the FastMCP instance. It is static text: no content returned by Qobuz is ever interpolated into it or into tool descriptions (FS-BEH-4).

@@ -258,3 +258,24 @@ async def test_unexpected_errors_are_masked(
     message = await search_error(client)
     assert "internal detail" not in message
     assert FAKE_TOKEN not in message
+
+
+@pytest.mark.parametrize(
+    ("tool", "arguments"),
+    [
+        ("remove_favorites", {"album_ids": ["0000000000001,0000000000002"]}),
+        ("add_favorites", {"album_ids": ["0000000000001 "]}),
+        ("check_library", {"album_ids": ["0000000000001&track_ids=1"]}),
+        ("get_album", {"album_id": "0000000000001,0000000000002"}),
+        ("list_similar_albums", {"album_id": ""}),
+        ("get_radio", {"seed_type": "album", "seed_id": "0000000000001,1"}),
+        ("list_related_stories", {"entity_type": "album", "entity_id": "1,2"}),
+    ],
+)
+async def test_malformed_string_ids_are_rejected_before_any_request(
+    client: Client[Any], fake_qobuz: FakeQobuz, tool: str, arguments: dict[str, Any]
+) -> None:
+    """AC-BEH-19"""
+    result = await client.call_tool(tool, arguments, raise_on_error=False)
+    assert result.is_error
+    assert fake_qobuz.requests == []
