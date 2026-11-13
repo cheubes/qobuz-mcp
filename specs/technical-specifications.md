@@ -22,7 +22,7 @@ Runtime dependencies: `fastmcp`, `httpx2`, `pydantic`, `keyring`. `httpx2` and `
 
 Development dependencies (`dev` group, PEP 735): `pytest`, `anyio`, `coverage`, `ruff`, `mypy`.
 
-CI-only tools, not project dependencies: gitleaks, zizmor, lychee, CodeQL (section 14).
+CI-only tools, not project dependencies: gitleaks, zizmor, lychee, CodeQL, ShellCheck (section 14). ShellCheck also runs locally through `scripts/check.sh`.
 
 Prerequisites on the machine: Homebrew and uv. Node.js only for the MCP Inspector (section 11).
 
@@ -50,6 +50,9 @@ pyproject.toml
 uv.lock
 scripts/
     check_traceability.py
+    check.sh             # every local check, in the order of CI
+    install.sh           # dependencies, login, client registration
+    update.sh            # pull, sync, optional live check of the Qobuz API
 src/qobuz_mcp/
     __init__.py
     __main__.py          # python -m qobuz_mcp
@@ -329,8 +332,13 @@ The current web player endpoints return albums, tracks and playlists in another 
 | `uv run mypy` | Type check |
 | `uv run coverage run -m pytest -m "not live"` then `uv run coverage report` | Coverage, with the threshold of section 3 |
 | `uv run python scripts/check_traceability.py` | Acceptance criteria traceability (section 13) |
+| `scripts/check.sh` | Every check of CI, in the same order, ShellCheck included, plus the live tests. Stops at the first failure (ADR-0037, ADR-0038) |
+| `scripts/install.sh` | Install: `uv sync`, `login` when no credentials are stored, Claude Code registration in user scope, and the Claude Desktop configuration block printed with the actual paths. Skips completed steps (ADR-0037) |
+| `scripts/update.sh [--check]` | Update: `git pull --ff-only` and `uv sync`. With `--check`, the live tests, to detect a change of the Qobuz API |
 
 ## 12. Client configuration
+
+`scripts/install.sh` runs the Claude Code command below and prints the Claude Desktop block with the actual paths (section 11).
 
 Claude Code, in user scope, since the default local scope registers the server for the current directory only:
 
@@ -383,7 +391,7 @@ Triggers: push to `main`, pull requests, manual dispatch. Workflow permissions: 
 
 | Job | Runner | Steps |
 |---|---|---|
-| `lint` | `ubuntu-latest` | `uv lock --check`, `uv run ruff check .`, `uv run ruff format --check .` |
+| `lint` | `ubuntu-latest` | `uv lock --check`, `uv run ruff check .`, `uv run ruff format --check .`, and ShellCheck on `scripts/*.sh`, run with `uvx` from `shellcheck-py` at a pinned version (ADR-0038) |
 | `types` | `ubuntu-latest` | `uv run mypy` |
 | `test` | `macos-latest` | `uv sync --locked`, then `uv run coverage run -m pytest -m "not live"` and `uv run coverage report`. Matrix: Python 3.14 (required) and 3.15 (`continue-on-error`, early warning only) |
 | `traceability` | `ubuntu-latest` | `uv run python scripts/check_traceability.py`: only criteria of checked plan steps must be cited, so the job passes before features exist |
@@ -405,6 +413,7 @@ Code scanning is free only for public repositories, so `codeql.yml` is added at 
 - Every third-party action is pinned by full commit SHA, with the version in a trailing comment.
 - `dependabot.yml` updates the `github-actions` and `uv` ecosystems weekly, with one grouped pull request per ecosystem, and a 7-day cooldown so that brand-new releases are not adopted immediately.
 - `actions/checkout` runs with `persist-credentials: false`, so later steps cannot reuse the token.
+- Tools run with `uvx` (zizmor, ShellCheck) are pinned in the command. Dependabot does not track them: they are updated by hand.
 
 ## 15. Publication
 

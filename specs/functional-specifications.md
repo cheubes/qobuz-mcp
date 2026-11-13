@@ -53,7 +53,7 @@ Login and logout take effect on the next tool call, without restarting the MCP c
 
 ### FS-SETUP-3: client registration
 
-The user registers the server in their MCP client configuration (stdio transport). The README documents the configuration for Claude Desktop and Claude Code.
+The user registers the server in their MCP client configuration (stdio transport). The README documents the configuration for Claude Desktop and Claude Code. An install script registers the server in Claude Code and prints the Claude Desktop configuration (ADR-0037).
 
 ## 5. Tools
 

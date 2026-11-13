@@ -34,8 +34,18 @@ It does not control playback, and it does not download or stream audio.
 ```sh
 git clone https://github.com/cheubes/qobuz-mcp.git
 cd qobuz-mcp
-uv sync
+scripts/install.sh
 ```
+
+The script installs the dependencies, runs the login described below when no credentials are stored, registers the server in Claude Code, and prints the block to add to the Claude Desktop configuration, with your paths. It skips the steps already done, so you can run it again. The sections below detail each step, to do them by hand.
+
+## Update
+
+```sh
+scripts/update.sh
+```
+
+The script pulls the latest version and updates the dependencies. Then restart Claude Desktop and open a new Claude Code session. With `--check`, it also runs the live tests, which tell whether Qobuz changed its API: run it when a tool starts failing.
 
 ## Login
 

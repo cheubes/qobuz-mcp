@@ -69,3 +69,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   Prerequisites, login, client configuration.
   Delivers: AC-SETUP-11, AC-BEH-15.
   Done when: both manual criteria have been checked by hand with Claude Desktop and Claude Code.
+- [ ] **16. Setup and development scripts**
+  `scripts/install.sh`, `scripts/update.sh` and `scripts/check.sh` (ADR-0037), checked by ShellCheck in the `lint` job (ADR-0038). README, `CONTRIBUTING.md` and `CLAUDE.md` point to them.
+  Delivers: none.
+  Done when: ShellCheck passes in CI, and the three scripts ran successfully on the maintainer's machine.
