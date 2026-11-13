@@ -25,7 +25,7 @@ body:
     id: client
     attributes:
       label: MCP client and version
-      placeholder: Claude Desktop 1.2.3, Claude Code 2.3.4, Gemini CLI 0.68.0
+      placeholder: Claude Desktop 1.2.3, Claude Code 2.3.4, Antigravity CLI 1.5.8
     validations:
       required: true
   - type: textarea

@@ -25,4 +25,4 @@ if [ "$check" = true ]; then
   uv run pytest -m live
 fi
 
-echo "Done. Restart Claude Desktop, and open a new Claude Code or Gemini CLI session, to use the new version."
+echo "Done. Restart Claude Desktop, and open a new Claude Code or Antigravity CLI session, to use the new version."

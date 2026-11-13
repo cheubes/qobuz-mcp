@@ -333,12 +333,12 @@ The current web player endpoints return albums, tracks and playlists in another 
 | `uv run coverage run -m pytest -m "not live"` then `uv run coverage report` | Coverage, with the threshold of section 3 |
 | `uv run python scripts/check_traceability.py` | Acceptance criteria traceability (section 13) |
 | `scripts/check.sh` | Every check of CI, in the same order, ShellCheck included, plus the live tests. Stops at the first failure (ADR-0037, ADR-0038) |
-| `scripts/install.sh` | Install: `uv sync`, `login` when no credentials are stored, Claude Code and Gemini CLI registration in user scope, and the Claude Desktop configuration block printed with the actual paths. Skips completed steps (ADR-0037) |
+| `scripts/install.sh` | Install: `uv sync`, `login` when no credentials are stored, Claude Code registration in user scope, Antigravity CLI registration, and the Claude Desktop configuration block printed with the actual paths. Skips completed steps (ADR-0037) |
 | `scripts/update.sh [--check]` | Update: `git pull --ff-only` and `uv sync`. With `--check`, the live tests, to detect a change of the Qobuz API |
 
 ## 12. Client configuration
 
-`scripts/install.sh` runs the Claude Code and Gemini CLI commands below and prints the Claude Desktop block with the actual paths (section 11).
+`scripts/install.sh` runs the Claude Code and Antigravity CLI commands below and prints the Claude Desktop block with the actual paths (section 11).
 
 Claude Code, in user scope, since the default local scope registers the server for the current directory only:
 
@@ -359,13 +359,13 @@ Claude Desktop (`claude_desktop_config.json`). The absolute path to `uv` is requ
 }
 ```
 
-Gemini CLI, in user scope, written to `~/.gemini/settings.json`: the default project scope writes into the current directory and requires a trusted workspace. Never with `--trust`, which bypasses every tool call confirmation (ADR-0039):
+Antigravity CLI, written to its global configuration, `~/.gemini/config/mcp_config.json`, active in every conversation. `--` separates the flags of `agy mcp add` from the arguments of `uv`. `agy mcp add` adds or updates the server. The server is never used with `--dangerously-skip-permissions` or `"toolPermission": "always-proceed"`, which skip approvals (ADR-0039):
 
 ```sh
-gemini mcp add --scope user qobuz uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
+agy mcp add qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
 ```
 
-The Gemini app cannot run a local stdio server and is not supported.
+The Gemini app cannot run a local stdio server, and Gemini CLI no longer serves individual accounts: neither is supported.
 
 ## 13. Tests
 
