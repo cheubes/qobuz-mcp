@@ -37,7 +37,7 @@ cd qobuz-mcp
 scripts/install.sh
 ```
 
-The script installs the dependencies, runs the login described below when no credentials are stored, registers the server in Claude Code and Antigravity CLI when they are installed, and prints the block to add to the Claude Desktop configuration, with your paths. It skips the steps already done, so you can run it again. The sections below detail each step, to do them by hand.
+The script installs the dependencies, runs the login described below when no credentials are stored, registers the server in Claude Code and Antigravity CLI when they are installed, and prints the block to add to the Claude Desktop configuration, with your paths. It skips the steps already done, except the Antigravity CLI registration, which it updates, so you can run it again. The sections below detail each step, to do them by hand.
 
 ## Update
 
@@ -96,10 +96,10 @@ claude mcp add --scope user qobuz -- uv run --directory /path/to/qobuz-mcp qobuz
 **Antigravity CLI and the Antigravity app:**
 
 ```sh
-agy mcp add qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
+agy mcp add qobuz -- /opt/homebrew/bin/uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
 ```
 
-The server goes to the global configuration, `~/.gemini/config/mcp_config.json`, which the Antigravity desktop app also reads: it is available in every conversation of both.
+The server goes to the global configuration, `~/.gemini/config/mcp_config.json`, which the Antigravity desktop app also reads: it is available in every conversation of both. As for Claude Desktop, the app does not inherit your shell `PATH`, hence the absolute path to `uv`. `scripts/install.sh` runs this command at each install, which overwrites any change you made to the qobuz entry, such as an `--env` variable.
 
 Whether Antigravity asks before running a tool depends on its agent mode, and Auto mode, the default, does not document how it treats MCP tools. Make every write tool ask for your approval: in an Antigravity CLI session, run `/permissions` and add an `ask` rule for each of them:
 

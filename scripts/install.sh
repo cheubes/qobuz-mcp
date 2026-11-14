@@ -1,6 +1,7 @@
 #!/bin/sh
 # Install qobuz-mcp: dependencies, Qobuz login, Claude Code and Antigravity CLI registration,
-# Claude Desktop configuration. Safe to run again: completed steps are skipped.
+# Claude Desktop configuration. Safe to run again: completed steps are skipped, and the
+# Antigravity CLI registration is updated.
 set -eu
 cd "$(dirname "$0")/.."
 repo=$(pwd)
@@ -36,16 +37,17 @@ else
 fi
 
 echo "==> Antigravity CLI"
+agy_failed=false
 if ! command -v agy >/dev/null 2>&1; then
   echo "Antigravity CLI not found: skipped."
-else
-  if agy mcp list | grep -q '^qobuz '; then
-    echo "The qobuz server is already registered."
-  else
-    # `--` keeps the arguments of uv, which start with `-`, away from agy's own flags.
-    agy mcp add qobuz -- uv run --directory "$repo" qobuz-mcp serve
-  fi
+# `add` adds or updates, so a moved clone gets its new path, and `enable` undoes a disable.
+# The Antigravity app does not inherit the shell PATH, hence the absolute path to uv.
+elif agy mcp add qobuz -- "$uv_path" run --directory "$repo" qobuz-mcp serve \
+  && agy mcp enable qobuz; then
   echo "Add the ask rules of the write tools with /permissions: see README, Client configuration."
+else
+  echo "Antigravity CLI registration failed: see the error above." >&2
+  agy_failed=true
 fi
 
 echo "==> Claude Desktop"
@@ -62,4 +64,8 @@ inside "mcpServers", then restart Claude Desktop:
       "args": ["run", "--directory", "$repo", "qobuz-mcp", "serve"]
     }
 CONFIG
+fi
+
+if [ "$agy_failed" = true ]; then
+  exit 1
 fi
