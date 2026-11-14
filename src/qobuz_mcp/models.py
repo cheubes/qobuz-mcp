@@ -238,7 +238,7 @@ def page_fields(
     items = [mapper(raw) for raw in group.get("items") or []]
     total = group.get("total")
     total = total if isinstance(total, int) else None
-    offset = group.get("offset", offset)
+    offset = _int_or(group.get("offset"), offset)
     has_more = group.get("has_more")
     if not isinstance(has_more, bool):
         has_more = total is not None and offset + len(items) < total
@@ -246,9 +246,13 @@ def page_fields(
         "items": items,
         "has_more": has_more,
         "total": total,
-        "limit": group.get("limit", limit),
+        "limit": _int_or(group.get("limit"), limit),
         "offset": offset,
     }
+
+
+def _int_or(value: Any, default: int) -> int:
+    return value if isinstance(value, int) and not isinstance(value, bool) else default
 
 
 def fixed_page_fields(
@@ -287,7 +291,8 @@ def _audio_quality(raw: dict[str, Any]) -> AudioQuality:
 
 
 def _timestamp(value: Any) -> str | None:
-    if not isinstance(value, int | float):
+    # Qobuz sends `false` for some missing dates, and bool is an int in Python.
+    if not isinstance(value, int | float) or isinstance(value, bool):
         return None
     return datetime.fromtimestamp(value, UTC).isoformat()
 
@@ -623,18 +628,30 @@ def library_status(
     """Whether given items are favorites or purchases. The account data Qobuz sends along,
     such as the login under `user`, is never read (FS-BEH-3)."""
 
-    def purchased(kind: str) -> set[str]:
+    def purchased(kind: str) -> tuple[set[str], bool]:
+        """Purchased IDs, and whether the list holds all of them."""
         group = purchases.get(kind)
-        return _id_set(group.get("items") if isinstance(group, dict) else None)
+        items = group.get("items") if isinstance(group, dict) else None
+        total = group.get("total") if isinstance(group, dict) else None
+        count = len(items) if isinstance(items, list) else 0
+        complete = not isinstance(total, int) or total <= count
+        return _id_set(items), complete
+
+    def purchase_status(item_id: str | int, ids: set[str], complete: bool) -> bool | None:
+        if str(item_id) in ids:
+            return True
+        return False if complete else None
 
     def statuses(ids: list[str] | list[int], kind: str, purchasable: bool) -> list[ItemStatus]:
         favorite_ids = _id_set(favorites.get(kind))
-        purchased_ids = purchased(kind) if purchasable else set()
+        purchased_ids, complete = purchased(kind) if purchasable else (set(), True)
         return [
             ItemStatus(
                 id=item_id,
                 favorite=str(item_id) in favorite_ids,
-                purchased=str(item_id) in purchased_ids if purchasable else None,
+                purchased=purchase_status(item_id, purchased_ids, complete)
+                if purchasable
+                else None,
             )
             for item_id in ids
         ]

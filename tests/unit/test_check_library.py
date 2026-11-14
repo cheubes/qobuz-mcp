@@ -2,6 +2,7 @@ import json
 from collections.abc import AsyncIterator
 from typing import Any
 
+import httpx2
 import pytest
 from fastmcp import Client
 
@@ -79,3 +80,21 @@ async def test_account_login_never_reaches_the_result(client: Client[Any]) -> No
     login = PURCHASE_IDS["user"]["login"]
     assert login not in json.dumps(result.structured_content)
     assert all(login not in getattr(block, "text", "") for block in result.content)
+
+
+async def test_an_incomplete_purchase_list_leaves_unlisted_items_unknown(
+    client: Client[Any], fake_qobuz: FakeQobuz
+) -> None:
+    """AC-LIB-10"""
+    fake_qobuz.api_responses["purchase/getUserPurchasesIds"] = httpx2.Response(
+        200,
+        json={
+            "albums": {"total": 2, "items": [{"id": "0000000000021"}]},
+            "tracks": {"total": 1, "items": [3002]},
+        },
+    )
+    status = await check(
+        client, album_ids=["0000000000021", "0000000000099"], track_ids=[3002, 3001]
+    )
+    assert [album["purchased"] for album in status["albums"]] == [True, None]
+    assert [track["purchased"] for track in status["tracks"]] == [True, False]

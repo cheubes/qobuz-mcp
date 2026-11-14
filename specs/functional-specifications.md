@@ -251,6 +251,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-LIB-07** [test] Given no ID at all, when `check_library` is called, then the call is rejected with a validation error and no request is sent.
 - **AC-LIB-08** [test] The result of `check_library` never contains the account login Qobuz returns with the purchased IDs.
 - **AC-LIB-09** [test] `list_new_releases_from_favorites` requests the releases of the favorite type matching `source`.
+- **AC-LIB-10** [test] Given Qobuz returns fewer purchased IDs than its `total`, when `check_library` is called, then an album or track missing from the list has `purchased` null, not false.
 
 ### Playlists
 
