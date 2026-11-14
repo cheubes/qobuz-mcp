@@ -148,7 +148,7 @@ Errors are returned as explicit, actionable messages:
 - Credentials are stored only in the macOS Keychain.
 - Tokens and authorization codes never appear in tool results, logs, error messages or CLI output. The CLI never handles the password.
 - The server and the CLI send requests only to Qobuz hosts: the API and the web player.
-- Tool results never contain account identifiers, such as the login some endpoints return alongside the requested data.
+- Tool results never contain account identifiers: the login, the email and the other private fields of the user's profile, which some endpoints return alongside the requested data. A playlist's owner, its public ID and display name as Qobuz shows them on any public playlist, is catalog data, kept also for the user's own playlists (ADR-0043).
 - The CLI's temporary callback server listens on `127.0.0.1` only, and only during `login`.
 
 ### FS-BEH-4: untrusted content
