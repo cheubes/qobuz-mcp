@@ -232,7 +232,7 @@ All endpoints below were called successfully during the proof of concept, or dur
 - Public URLs are built in `models.py`: `https://open.qobuz.com/{album|artist|track|playlist|label}/{id}`, and `https://play.qobuz.com/{award|story}/{id}`, the web player routes `award/:awardId` and `story/:id`, for awards and stories.
 - Server instructions (FS-BEH-5): one constant in `server.py`, passed to the FastMCP instance. It is static text: no content returned by Qobuz is ever interpolated into it or into tool descriptions (FS-BEH-4).
 - `create_playlist` sends `is_public` and `is_collaborative` explicitly, `false` unless the caller set them (FS 5.3).
-- Logging: standard `logging` to stderr only, since stdout carries the MCP protocol. Level `INFO`. The HTTP stack's loggers (`httpx2` and its transport layer, exact names confirmed at implementation) are capped at `WARNING`, so request details never reach the logs.
+- Logging: standard `logging` to stderr only, since stdout carries the MCP protocol. Level `INFO`. The HTTP stack's loggers, `httpx2` and `httpcore2`, the parent of every transport logger (`httpcore2.connection`, `httpcore2.http11` and the others), are capped at `WARNING`, so request details never reach the logs.
 
 ## 10. Output models
 
