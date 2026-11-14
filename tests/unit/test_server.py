@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -279,3 +280,16 @@ async def test_malformed_string_ids_are_rejected_before_any_request(
     result = await client.call_tool(tool, arguments, raise_on_error=False)
     assert result.is_error
     assert fake_qobuz.requests == []
+
+
+def test_run_caps_the_http_loggers(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(server.mcp, "run", lambda **options: None)
+    loggers = [logging.getLogger(name) for name in server.HTTP_LOGGERS]
+    levels = [logger.level for logger in loggers]
+    try:
+        server.run()
+        for name in ("httpx2", "httpcore2.connection", "httpcore2.http11", "httpcore2.http2"):
+            assert logging.getLogger(name).getEffectiveLevel() == logging.WARNING
+    finally:
+        for logger, level in zip(loggers, levels, strict=True):
+            logger.setLevel(level)

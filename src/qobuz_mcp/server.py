@@ -105,8 +105,13 @@ mcp.tool(playlists.follow_playlist, annotations=ADDITIVE)
 mcp.tool(playlists.unfollow_playlist, annotations=DESTRUCTIVE)
 
 
+# The parent logger of httpcore2 caps its connection, http11, http2, proxy and socks loggers.
+HTTP_LOGGERS = ("httpx2", "httpcore2")
+
+
 def run() -> None:
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
     # Request lines would show query parameters.
-    logging.getLogger("httpx2").setLevel(logging.WARNING)
+    for name in HTTP_LOGGERS:
+        logging.getLogger(name).setLevel(logging.WARNING)
     mcp.run(transport="stdio", show_banner=False)
