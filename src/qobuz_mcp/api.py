@@ -6,6 +6,7 @@ import httpx2
 
 from qobuz_mcp.errors import (
     AuthenticationError,
+    DuplicateTracksError,
     ForbiddenError,
     InvalidAppIdError,
     NotFoundError,
@@ -238,7 +239,8 @@ class QobuzClient:
         self, playlist_id: int, track_ids: list[int]
     ) -> dict[str, Any]:
         return await self.post(
-            "playlist/addTracks", {"playlist_id": playlist_id, "track_ids": track_ids}
+            "playlist/addTracks",
+            {"playlist_id": playlist_id, "track_ids": track_ids, "no_duplicate": True},
         )
 
     async def remove_tracks_from_playlist(
@@ -418,6 +420,12 @@ def _error_for(response: httpx2.Response, endpoint: str, params: dict[str, str])
                 "the playlist is not owned by the user."
             )
         return ForbiddenError(f"Qobuz refused {endpoint} for {requested_ids(params)}.")
+    if status == 409 and endpoint == "playlist/addTracks":
+        return DuplicateTracksError(
+            f"Some of track_ids={params['track_ids']} are already in "
+            f"playlist_id={params['playlist_id']}: nothing was added. "
+            "Add only the tracks not yet in the playlist."
+        )
     if status == 404:
         return NotFoundError(f"Qobuz found nothing for {requested_ids(params)}.")
     if status == 429 or status >= 500:

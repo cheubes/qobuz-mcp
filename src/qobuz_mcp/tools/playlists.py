@@ -72,7 +72,10 @@ async def add_tracks_to_playlist(
         list[int], Field(min_length=1, description="Qobuz track IDs, in the order to add them.")
     ],
 ) -> PlaylistSummary:
-    """Append tracks at the end of a playlist the user owns, in the given order."""
+    """Append tracks at the end of a playlist the user owns, in the given order.
+
+    If any of the tracks is already in the playlist, nothing is added and an error says so.
+    """
     return playlist_summary(await qobuz(ctx).add_tracks_to_playlist(playlist_id, track_ids))
 
 
