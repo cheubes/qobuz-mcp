@@ -4,7 +4,7 @@ Status: approved
 
 ## 1. Purpose
 
-A local MCP server that lets an AI assistant (Claude Desktop, Claude Code, Antigravity CLI) explore the Qobuz catalog and manage the user's Qobuz library: favorites and playlists.
+A local MCP server that lets an AI assistant (Claude Desktop, Claude Code, Antigravity CLI, the Antigravity app) explore the Qobuz catalog and manage the user's Qobuz library: favorites and playlists.
 
 ## 2. Context and constraints
 
@@ -53,7 +53,7 @@ Login and logout take effect on the next tool call, without restarting the MCP c
 
 ### FS-SETUP-3: client registration
 
-The user registers the server in their MCP client configuration (stdio transport). The README documents the configuration for Claude Desktop, Claude Code and Antigravity CLI. An install script registers the server in Claude Code and Antigravity CLI, and prints the Claude Desktop configuration (ADR-0037, ADR-0039).
+The user registers the server in their MCP client configuration (stdio transport). The README documents the configuration for Claude Desktop, Claude Code and Antigravity CLI, whose registration also serves the Antigravity desktop app, and the Antigravity permission rules that make every write tool ask for confirmation. An install script registers the server in Claude Code and Antigravity CLI, and prints the Claude Desktop configuration (ADR-0037, ADR-0039, ADR-0045).
 
 ## 5. Tools
 
@@ -203,6 +203,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-SETUP-19** [manual] Given the configuration documented in the README, when Antigravity CLI starts, then the server is connected and its tools are listed.
 - **AC-SETUP-20** [test] Given the Keychain is locked or access is denied, when the user runs `login` or `logout`, then the command exits with a non-zero status and states that the Keychain could not be accessed.
 - **AC-SETUP-21** [test] Given `login` is interrupted while waiting for the browser, then the command exits at once, without waiting for the 5-minute limit.
+- **AC-SETUP-22** [manual] Given the Antigravity CLI registration documented in the README, when the Antigravity desktop app starts, then the server is connected and its tools are listed.
 
 ### Cross-cutting behaviors
 
@@ -225,6 +226,7 @@ Read tools that only relay the API get few criteria. Most criteria cover setup, 
 - **AC-BEH-17** [manual] Given a playlist whose description asks the assistant to modify the library, when Antigravity CLI reads it through `get_playlist`, then no write tool runs without Antigravity CLI asking the user for confirmation.
 - **AC-BEH-18** [test] Given the Keychain is locked or access is denied, when any tool is called, then the error asks the user to unlock the Keychain or allow access.
 - **AC-BEH-19** [test] Given a string ID with characters other than letters and digits, such as a comma, when any tool is called, then the call is rejected with a validation error and no request is sent to Qobuz.
+- **AC-BEH-20** [manual] Given the Antigravity permission rules documented in the README, when the assistant calls each write tool, in Antigravity CLI in Auto mode and in the Antigravity app, then each call asks the user for confirmation first.
 
 ### Catalog
 

@@ -93,3 +93,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `check_library` reports an unknown purchase status when Qobuz lists fewer purchases than its total (ADR-0044).
   Delivers: AC-LIB-10.
   Done when: the criterion is covered and all checks pass.
+- [x] **22. Antigravity app and write confirmation**
+  README permission rules for the write tools, install script reminder, and the Antigravity desktop app as a client (ADR-0045).
+  Delivers: AC-SETUP-22, AC-BEH-20.
+  Done when: both manual criteria have been checked by hand with Antigravity CLI in Auto mode and the Antigravity app.
