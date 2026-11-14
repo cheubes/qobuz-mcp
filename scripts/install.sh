@@ -38,11 +38,14 @@ fi
 echo "==> Antigravity CLI"
 if ! command -v agy >/dev/null 2>&1; then
   echo "Antigravity CLI not found: skipped."
-elif agy mcp list | grep -q '^qobuz '; then
-  echo "The qobuz server is already registered."
 else
-  # `--` keeps the arguments of uv, which start with `-`, away from agy's own flags.
-  agy mcp add qobuz -- uv run --directory "$repo" qobuz-mcp serve
+  if agy mcp list | grep -q '^qobuz '; then
+    echo "The qobuz server is already registered."
+  else
+    # `--` keeps the arguments of uv, which start with `-`, away from agy's own flags.
+    agy mcp add qobuz -- uv run --directory "$repo" qobuz-mcp serve
+  fi
+  echo "Add the ask rules of the write tools with /permissions: see README, Client configuration."
 fi
 
 echo "==> Claude Desktop"

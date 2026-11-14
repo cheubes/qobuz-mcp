@@ -1,8 +1,8 @@
 # qobuz-mcp
 
-A local MCP server for macOS that lets an AI assistant, such as Claude Desktop, Claude Code or Antigravity CLI, explore the Qobuz catalog and manage your Qobuz library: favorites and playlists.
+A local MCP server for macOS that lets an AI assistant, such as Claude Desktop, Claude Code, Antigravity CLI or the Antigravity app, explore the Qobuz catalog and manage your Qobuz library: favorites and playlists.
 
-> **Status: usable.** Every step of the [implementation plan](specs/implementation-plan.md) is done, and the setup has been checked in Claude Desktop, Claude Code and Antigravity CLI. The server relies on an unofficial API: see the disclaimers below.
+> **Status: usable.** Every step of the [implementation plan](specs/implementation-plan.md) is done, and the setup has been checked in Claude Desktop, Claude Code, Antigravity CLI and the Antigravity app. The server relies on an unofficial API: see the disclaimers below.
 
 ## What it does
 
@@ -45,7 +45,7 @@ The script installs the dependencies, runs the login described below when no cre
 scripts/update.sh
 ```
 
-The script pulls the latest version and updates the dependencies. Then restart Claude Desktop, and open a new Claude Code or Antigravity CLI session. With `--check`, it also runs the live tests, which tell whether Qobuz changed its API: run it when a tool starts failing.
+The script pulls the latest version and updates the dependencies. Then restart Claude Desktop and the Antigravity app, and open a new Claude Code or Antigravity CLI session. With `--check`, it also runs the live tests, which tell whether Qobuz changed its API: run it when a tool starts failing.
 
 ## Login
 
@@ -93,15 +93,32 @@ claude mcp add --scope user qobuz -- uv run --directory /path/to/qobuz-mcp qobuz
 }
 ```
 
-**Antigravity CLI:**
+**Antigravity CLI and the Antigravity app:**
 
 ```sh
 agy mcp add qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
 ```
 
-The server goes to the global configuration, `~/.gemini/config/mcp_config.json`, for every conversation. By default, Antigravity CLI asks for your approval before running a qobuz tool. Never use `--dangerously-skip-permissions` or the `always-proceed` tool permission with this server: they remove the confirmation of write tools.
+The server goes to the global configuration, `~/.gemini/config/mcp_config.json`, which the Antigravity desktop app also reads: it is available in every conversation of both.
 
-Read-only tools can be allowed once in your client. Keep the confirmation of write tools: see the last disclaimer above.
+Whether Antigravity asks before running a tool depends on its agent mode, and Auto mode, the default, does not document how it treats MCP tools. Make every write tool ask for your approval: in an Antigravity CLI session, run `/permissions` and add an `ask` rule for each of them:
+
+```text
+mcp(qobuz/add_favorites)
+mcp(qobuz/remove_favorites)
+mcp(qobuz/create_playlist)
+mcp(qobuz/update_playlist)
+mcp(qobuz/add_tracks_to_playlist)
+mcp(qobuz/remove_tracks_from_playlist)
+mcp(qobuz/move_playlist_tracks)
+mcp(qobuz/delete_playlist)
+mcp(qobuz/follow_playlist)
+mcp(qobuz/unfollow_playlist)
+```
+
+The rules are global: they apply to the CLI and to the app. To stop confirming a read-only tool, add an `allow` rule for that tool only, such as `mcp(qobuz/search_catalog)`, never for the whole server. Never use `--dangerously-skip-permissions` or the `always-proceed` tool permission with this server: they bypass these rules and remove the confirmation of write tools.
+
+In the other clients, read-only tools can be allowed once. Keep the confirmation of write tools: see the last disclaimer above.
 
 ## How it is built
 
