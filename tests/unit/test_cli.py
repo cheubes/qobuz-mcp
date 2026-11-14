@@ -160,6 +160,16 @@ def test_token_login_with_override_skips_the_web_player(
     assert fake_qobuz.web_player_requests() == []
 
 
+def test_empty_override_is_ignored_by_token_login(
+    fake_qobuz: FakeQobuz, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("QOBUZ_APP_ID", "")
+    monkeypatch.setattr("getpass.getpass", lambda prompt: FAKE_TOKEN)
+    assert cli.main(["login", "--token"]) == 0
+    assert fake_qobuz.web_player_requests() != []
+    assert load_credentials() == Credentials(app_id=FAKE_APP_ID, user_auth_token=FAKE_TOKEN)
+
+
 def test_logout_removes_the_credentials(capsys: pytest.CaptureFixture[str]) -> None:
     """AC-SETUP-07, AC-SETUP-10"""
     save_credentials(Credentials(app_id=FAKE_APP_ID, user_auth_token=FAKE_TOKEN))

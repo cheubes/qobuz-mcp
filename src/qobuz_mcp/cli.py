@@ -9,7 +9,12 @@ from collections.abc import Sequence
 import httpx2
 
 from qobuz_mcp.api import REQUEST_TIMEOUT_SECONDS, QobuzClient
-from qobuz_mcp.credentials import Credentials, delete_credentials, save_credentials
+from qobuz_mcp.credentials import (
+    APP_ID_OVERRIDE_VARIABLE,
+    Credentials,
+    delete_credentials,
+    save_credentials,
+)
 from qobuz_mcp.errors import (
     AppIdExtractionError,
     AuthenticationError,
@@ -58,7 +63,7 @@ def _http_client() -> httpx2.AsyncClient:
 
 
 async def _login(*, with_token: bool) -> None:
-    app_id_override = os.environ.get("QOBUZ_APP_ID")
+    app_id_override = os.environ.get(APP_ID_OVERRIDE_VARIABLE) or None
     async with _http_client() as http:
         bundle = ""
         if app_id_override is None or not with_token:
