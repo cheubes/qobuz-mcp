@@ -16,6 +16,15 @@ from qobuz_mcp.errors import (
 )
 
 API_BASE_URL = "https://www.qobuz.com/api.json/0.2/"
+_OWNED_PLAYLIST_WRITES = frozenset(
+    {
+        "playlist/update",
+        "playlist/addTracks",
+        "playlist/deleteTracks",
+        "playlist/updateTracksPosition",
+        "playlist/delete",
+    }
+)
 REQUEST_TIMEOUT_SECONDS = 15.0
 
 LABEL_SECTION_ENDPOINTS = {
@@ -79,6 +88,8 @@ class QobuzClient:
             payload = await self.get(
                 "oauth/callback", {"code": code, "private_key": private_key}, authenticated=False
             )
+        except QobuzUnavailableError, InvalidAppIdError:
+            raise
         except QobuzError as error:
             raise AuthenticationError(
                 "Qobuz rejected the sign-in. Run `qobuz-mcp login` again."
@@ -414,7 +425,7 @@ def _error_for(response: httpx2.Response, endpoint: str, params: dict[str, str])
             "Qobuz rejected the app_id. Run `qobuz-mcp login` again, or set QOBUZ_APP_ID."
         )
     if status == 403:
-        if "playlist_id" in params:
+        if endpoint in _OWNED_PLAYLIST_WRITES:
             return ForbiddenError(
                 f"Qobuz refused {endpoint} for playlist_id={params['playlist_id']}: "
                 "the playlist is not owned by the user."

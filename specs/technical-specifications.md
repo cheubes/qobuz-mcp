@@ -141,7 +141,7 @@ The patterns were confirmed during the proof of concept on bundle `8.3.0-b029` a
 1. Start an HTTP server on `127.0.0.1`, on a free port chosen by the OS, accepting only `GET /callback/<nonce>`, where `<nonce>` is a random value generated for this login. Every other request gets a 404 and is ignored (AC-SETUP-14).
 2. Open `https://www.qobuz.com/signin/oauth?ext_app_id=<app_id>&redirect_url=<callback URL>` with `webbrowser`, and print it.
 3. Qobuz redirects the browser to `<callback URL>?code_autorisation=<code>`. The server answers with a short page telling the user to close the tab, then stops.
-4. `GET oauth/callback?code=<code>&private_key=<private key>` with `X-App-Id`. The response holds `token` and `user_id`, and only `token` is kept.
+4. `GET oauth/callback?code=<code>&private_key=<private key>` with `X-App-Id`. The response holds `token` and `user_id`, and only `token` is kept. If Qobuz is unavailable or rejects the `app_id`, the error says so (FS-BEH-2); any other failure is reported as a rejected sign-in (AC-SETUP-15).
 5. Call `user/get` with the token, which validates it and gives the display name `login` prints.
 6. Store the credentials (section 5).
 
@@ -167,7 +167,7 @@ Timeout: 5 minutes, after which the server stops, `LoginTimeoutError` is raised 
 |---|---|
 | 401 | `AuthenticationError` |
 | 400 whose message mentions the app id (Qobuz: "Invalid or missing app_id parameter") | `InvalidAppIdError` |
-| 403 | `ForbiddenError` |
+| 403 | `ForbiddenError`. On a write to a playlist the user must own (`playlist/update`, `addTracks`, `deleteTracks`, `updateTracksPosition`, `delete`), the message states that the playlist is not owned by the user (FS-BEH-2) |
 | 404 | `NotFoundError` |
 | 409 from `playlist/addTracks` | `DuplicateTracksError` |
 | 429, 5xx, network error, timeout | `QobuzUnavailableError` |

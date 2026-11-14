@@ -184,3 +184,35 @@ async def test_requests_only_go_to_qobuz_hosts() -> None:
         await client.post("favorite/create", {"album_ids": ["abc"]})
     assert {request.url.host for request in fake.requests} == {"play.qobuz.com", "www.qobuz.com"}
     assert all(request.url.scheme == "https" for request in fake.requests)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "endpoint", ["playlist/get", "playlist/subscribe", "playlist/unsubscribe", "playlist/story"]
+)
+async def test_refusals_on_playlists_not_meant_to_be_owned_do_not_mention_ownership(
+    endpoint: str,
+) -> None:
+    async with client_answering(answer(403)) as http:
+        with pytest.raises(ForbiddenError) as error_info:
+            await QobuzClient(http, FAKE_APP_ID, FAKE_TOKEN).post(endpoint, {"playlist_id": 7})
+    assert "playlist_id=7" in str(error_info.value)
+    assert "not owned" not in str(error_info.value)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("handler", "error_type", "message"),
+    [
+        (answer(503), QobuzUnavailableError, "Try again later"),
+        (answer(400, "Invalid or missing app_id parameter."), InvalidAppIdError, "QOBUZ_APP_ID"),
+        (answer(400, "Invalid code"), AuthenticationError, "rejected the sign-in"),
+    ],
+)
+async def test_oauth_exchange_keeps_unavailability_and_app_id_errors(
+    handler: Handler, error_type: type[QobuzError], message: str
+) -> None:
+    async with client_answering(handler) as http:
+        with pytest.raises(error_type, match=message) as error_info:
+            await QobuzClient(http, FAKE_APP_ID).exchange_oauth_code("code", "key")
+    assert type(error_info.value) is error_type
