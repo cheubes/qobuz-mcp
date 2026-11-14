@@ -89,3 +89,7 @@ From step 3 on, every step ships its code with its tests, and all local checks p
   `add_tracks_to_playlist` sends `no_duplicate=true`, and a 409 raises `DuplicateTracksError` (ADR-0042).
   Delivers: AC-PL-08.
   Done when: the criterion is covered and all checks pass.
+- [x] **21. Incomplete purchase lists**
+  `check_library` reports an unknown purchase status when Qobuz lists fewer purchases than its total (ADR-0044).
+  Delivers: AC-LIB-10.
+  Done when: the criterion is covered and all checks pass.

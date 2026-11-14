@@ -186,7 +186,8 @@ async def check_library(
     """Check whether given albums, artists and tracks are in the user's favorites, and whether
     given albums and tracks are purchased.
 
-    Results keep the order of the given IDs. `purchased` is null for artists.
+    Results keep the order of the given IDs. `purchased` is null for artists, and for albums
+    and tracks Qobuz did not list as purchased when its list of purchases is incomplete.
     """
     albums, artists, tracks = album_ids or [], artist_ids or [], track_ids or []
     _require_ids(albums, artists, tracks)
