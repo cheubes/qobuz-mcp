@@ -336,7 +336,7 @@ The current web player endpoints return albums, tracks and playlists in another 
 | `uv run coverage run -m pytest -m "not live"` then `uv run coverage report` | Coverage, with the threshold of section 3 |
 | `uv run python scripts/check_traceability.py` | Acceptance criteria traceability (section 13) |
 | `scripts/check.sh` | Every check of CI, in the same order, ShellCheck included, plus the live tests. Stops at the first failure (ADR-0037, ADR-0038) |
-| `scripts/install.sh` | Install: `uv sync`, `login` when no credentials are stored, Claude Code registration in user scope, Antigravity CLI registration with a reminder of its permission rules, and the Claude Desktop configuration block printed with the actual paths. Skips completed steps (ADR-0037, ADR-0039, ADR-0045) |
+| `scripts/install.sh` | Install: `uv sync`, `login` when no credentials are stored, Claude Code registration in user scope, Antigravity CLI registration, updated at each run, with a reminder of its permission rules, and the Claude Desktop configuration block printed with the actual paths. Skips the other completed steps, and still runs the Claude Desktop step when the Antigravity registration fails (ADR-0037, ADR-0039, ADR-0045, ADR-0046) |
 | `scripts/update.sh [--check]` | Update: `git pull --ff-only` and `uv sync`. With `--check`, the live tests, to detect a change of the Qobuz API |
 
 ## 12. Client configuration
@@ -362,10 +362,10 @@ Claude Desktop (`claude_desktop_config.json`). The absolute path to `uv` is requ
 }
 ```
 
-Antigravity CLI, written to its global configuration, `~/.gemini/config/mcp_config.json`, active in every conversation of the CLI and of the Antigravity desktop app, which reads the same file (ADR-0045). `--` separates the flags of `agy mcp add` from the arguments of `uv`. `agy mcp add` adds or updates the server. The server is never used with `--dangerously-skip-permissions` or `"toolPermission": "always-proceed"`, which skip approvals (ADR-0039):
+Antigravity CLI, written to its global configuration, `~/.gemini/config/mcp_config.json`, active in every conversation of the CLI and of the Antigravity desktop app, which reads the same file (ADR-0045). `--` separates the flags of `agy mcp add` from the arguments of `uv`. `agy mcp add` adds or updates the server, with the absolute path to `uv` since the desktop app does not inherit the shell `PATH`, and `scripts/install.sh` runs it at each install, followed by `agy mcp enable qobuz` (ADR-0046). The server is never used with `--dangerously-skip-permissions` or `"toolPermission": "always-proceed"`, which skip approvals (ADR-0039):
 
 ```sh
-agy mcp add qobuz -- uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
+agy mcp add qobuz -- /opt/homebrew/bin/uv run --directory /path/to/qobuz-mcp qobuz-mcp serve
 ```
 
 Each write tool of FS 5.3 gets an `mcp(qobuz/<tool>)` rule set to `ask`, added by the user with `/permissions`, since no `agy` subcommand writes rules: the rules are global, and pin the confirmation whatever the agent mode, Auto included (ADR-0045). `scripts/install.sh` reminds the user to add them.
