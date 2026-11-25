@@ -7,8 +7,8 @@ license = "CC0-1.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.14"
 dependencies = [
-    "fastmcp>=4.1,<5",
-    "httpx2>=2.16.0",
+    "fastmcp>=4.2.1,<5",
+    "httpx2>=2.16.2",
     "keyring>=25.7.0",
     "pydantic>=2.14.3",
 ]
@@ -17,7 +17,7 @@ dependencies = [
 qobuz-mcp = "qobuz_mcp.cli:main"
 
 [build-system]
-requires = ["uv_build>=0.13.7,<0.14"]
+requires = ["uv_build>=0.13.9,<0.14"]
 build-backend = "uv_build"
 
 [tool.uv]
@@ -52,8 +52,8 @@ markers = ["live: calls the real Qobuz API, read-only"]
 [dependency-groups]
 dev = [
     "anyio>=4.16.0",
-    "coverage>=7.17.2",
+    "coverage>=7.17.3",
     "mypy>=2.4.1",
     "pytest>=9.2.0",
-    "ruff>=0.17.4",
+    "ruff>=0.17.5",
 ]
